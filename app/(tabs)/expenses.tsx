@@ -1,77 +1,114 @@
 import TransactionList from "@/components/transaction-list";
+
 import useColorTheme from "@/hooks/useColorTheme";
+import { database, Transaction } from "@/lib/db/database";
+import { useFocusEffect } from "@react-navigation/native";
 import * as React from "react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
+  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  // TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Text, TextInput } from "react-native-paper";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-}
-
 export default function ExpensesScreen() {
   const { theme } = useColorTheme();
 
-  const [expenses, setExpenses] = useState<Expense[]>([
-    {
-      id: "1",
-      description: "Freelance Project",
-      amount: -12000,
-      date: "2025-10-15",
-    },
-    { id: "2", description: "Bonus", amount: -8000, date: "2025-10-10" },
-    {
-      id: "3",
-      description: "Freelance Project",
-      amount: -12000,
-      date: "2025-10-15",
-    },
-    { id: "4", description: "Bonus", amount: -8000, date: "2025-10-10" },
-    {
-      id: "5",
-      description: "Freelance Project",
-      amount: -12000,
-      date: "2025-10-15",
-    },
-    { id: "6", description: "Bonus", amount: -8000, date: "2025-10-10" },
-    {
-      id: "7",
-      description: "Freelance Project",
-      amount: -12000,
-      date: "2025-10-15",
-    },
-  ]);
+  const [expenses, setExpenses] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [newDesc, setNewDesc] = useState("");
   const [newAmount, setNewAmount] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
-  const addEarning = () => {
-    if (!newDesc || !newAmount) return;
-    const amountNum = parseFloat(newAmount);
-    if (isNaN(amountNum)) return;
+  // Load earnings from database
+  const loadExpenses = async () => {
+    try {
+      setLoading(true);
+      const transactions = await database.getTransactionsByType("EXPENSE");
+      setExpenses(transactions);
+    } catch (error) {
+      console.error("Failed to load expenses:", error);
+      Alert.alert("Error", "Failed to load expenses");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const newEarning: Expense = {
-      id: (expenses.length + 1).toString(),
-      description: newDesc,
-      amount: amountNum,
-      date: new Date().toISOString().split("T")[0],
+  // Reload earnings when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadExpenses();
+    }, [])
+  );
+
+  // Load first account ID on mount
+  React.useEffect(() => {
+    const loadDefaultAccount = async () => {
+      try {
+        const accounts = await database.getAllAccounts();
+        if (accounts.length > 0) {
+          setSelectedAccountId(accounts[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load accounts:", error);
+      }
     };
-    setExpenses([newEarning, ...expenses]);
-    setNewDesc("");
-    setNewAmount("");
+    loadDefaultAccount();
+  }, []);
+
+  const addExpense = async () => {
+    if (!newDesc || !newAmount) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    if (!selectedAccountId) {
+      Alert.alert(
+        "Error",
+        "No account selected. Please create an account first."
+      );
+      return;
+    }
+
+    const amountNum = parseFloat(newAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      Alert.alert("Error", "Please enter a valid amount");
+      return;
+    }
+
+    try {
+      await database.addTransaction({
+        name: newDesc,
+        type: "EXPENSE",
+        amount: amountNum,
+        accountId: selectedAccountId,
+      });
+
+      // Update account balance
+      const account = await database.getAccountById(selectedAccountId);
+      if (account) {
+        await database.updateAccountBalance(
+          selectedAccountId,
+          account.balance + amountNum
+        );
+      }
+
+      setNewDesc("");
+      setNewAmount("");
+      loadExpenses(); // Refresh the list
+      Alert.alert("Success", "Expense added successfully!");
+    } catch (error) {
+      console.error("Failed to add earning:", error);
+      Alert.alert("Error", "Failed to add earning");
+    }
   };
 
   // Add Earning tab
@@ -111,7 +148,7 @@ export default function ExpensesScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.addButton} onPress={addEarning}>
+          <TouchableOpacity style={styles.addButton} onPress={addExpense}>
             <Text style={styles.addButtonText}>Add Expense</Text>
           </TouchableOpacity>
         </View>
@@ -122,7 +159,17 @@ export default function ExpensesScreen() {
   // Transactions tab
   const ListTab = () => (
     <View style={{ padding: 16, paddingBottom: 0 }}>
-      <TransactionList transactions={expenses} />
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <Text>Loading earnings...</Text>
+        </View>
+      ) : expenses.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={{ color: theme.text.secondary }}>No expenses yet</Text>
+        </View>
+      ) : (
+        <TransactionList transactions={expenses} onRefresh={loadExpenses} />
+      )}
     </View>
   );
 
@@ -184,4 +231,10 @@ const styles = StyleSheet.create({
   desc: { fontSize: 16, fontWeight: "500" },
   amount: { fontSize: 16, fontWeight: "bold", color: "#10871a", marginTop: 4 },
   date: { fontSize: 12 },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
 });

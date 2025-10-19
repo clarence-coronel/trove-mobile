@@ -6,7 +6,7 @@ const useColorTheme = () => {
 
   return {
     theme: Colors[colorScheme ?? "light"],
-    mode: colorScheme,
+    mode: colorScheme ?? "light",
   };
 };
 

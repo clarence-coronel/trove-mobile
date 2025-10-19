@@ -1,72 +1,114 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import React, { useState } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
+import { Account, database, NewAccount } from "@/lib/db/database";
 import AddAccountModal from "./add-account-modal";
-import Card, { AccountType } from "./card";
-
-const sampleAccounts = [
-  {
-    bankName: "BDO",
-    nickname: "Travel Fund",
-    balance: 125450.75,
-    cardholder: "CLARENCE CORONEL",
-    cardType: "SAVINGS" as AccountType,
-  },
-  {
-    bankName: "BPI",
-    nickname: "Groceries",
-    balance: 85230.0,
-    cardholder: "CLARENCE CORONEL",
-    cardType: "CHECKING" as AccountType,
-  },
-  {
-    bankName: "GCash",
-    nickname: "Bills",
-    balance: 8945.5,
-    cardholder: "CLARENCE CORONEL",
-    cardType: "E-WALLET" as AccountType,
-  },
-  {
-    bankName: "Maya",
-    nickname: "Coffee & Snacks",
-    balance: 15670.25,
-    cardholder: "CLARENCE CORONEL",
-    cardType: "E-WALLET" as AccountType,
-  },
-  {
-    bankName: "Metrobank",
-    nickname: "Emergency Fund",
-    balance: 450890.0,
-    cardholder: "CLARENCE CORONEL",
-    cardType: "SAVINGS" as AccountType,
-  },
-];
+import Card from "./card";
+import EditAccountModal from "./edit-account-modal";
 
 export default function AccountsTab() {
   const { theme } = useColorTheme();
-  const [accounts, setAccounts] = useState(sampleAccounts);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
 
-  const handleAddAccount = (newAccount: {
-    bankName: string;
-    nickname: string;
-    balance: number;
-    cardholder: string;
-    cardType: AccountType;
-  }) => {
-    setAccounts([...accounts, newAccount]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      setLoading(true);
+      const allAccounts = await database.getAllAccounts();
+      setAccounts(allAccounts);
+    } catch (error) {
+      console.error("Failed to load accounts:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleAddAccount = async (newAccount: NewAccount) => {
+    try {
+      await database.addAccount(newAccount);
+      await loadAccounts();
+    } catch (error) {
+      console.error("Failed to add account:", error);
+      Alert.alert("Error", "Failed to add account. Please try again.");
+    }
+  };
+
+  const handleEditAccount = async (
+    id: string,
+    updatedAccount: Partial<NewAccount>
+  ) => {
+    try {
+      const success = await database.updateAccount(id, updatedAccount);
+
+      if (success) {
+        await loadAccounts();
+        setEditModalVisible(false);
+        setSelectedAccount(null);
+        Alert.alert("Success", "Account updated successfully!");
+      } else {
+        Alert.alert("Error", "Failed to update account. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to edit account:", error);
+      Alert.alert("Error", "Failed to update account. Please try again.");
+    }
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    try {
+      const success = await database.deleteAccount(id);
+
+      if (success) {
+        await loadAccounts();
+        setEditModalVisible(false);
+        setSelectedAccount(null);
+        Alert.alert("Success", "Account deleted successfully!");
+      } else {
+        Alert.alert("Error", "Failed to delete account. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      Alert.alert("Error", "Failed to delete account. Please try again.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: theme.background.secondary },
+        ]}
+      >
+        <ActivityIndicator size="large" color={theme.tint} />
+      </View>
+    );
+  }
 
   return (
     <>
       <FlatList
         data={accounts}
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={[
-          styles.listContent,
-          { backgroundColor: theme.background.secondary },
-        ]}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <TouchableOpacity
             style={[
@@ -82,13 +124,24 @@ export default function AccountsTab() {
             </Text>
           </TouchableOpacity>
         }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, { color: theme.text.secondary }]}>
+              No accounts yet...
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <Card
-            bankName={item.bankName}
+            bankName={item.provider}
             nickname={item.nickname}
             balance={item.balance}
-            cardholder={item.cardholder}
-            cardType={item.cardType}
+            cardholder={item.accountName}
+            cardType={item.type}
+            onEdit={() => {
+              setSelectedAccount(item);
+              setEditModalVisible(true);
+            }}
           />
         )}
         showsVerticalScrollIndicator={true}
@@ -98,6 +151,17 @@ export default function AccountsTab() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onAdd={handleAddAccount}
+      />
+
+      <EditAccountModal
+        visible={editModalVisible}
+        onClose={() => {
+          setSelectedAccount(null);
+          setEditModalVisible(false);
+        }}
+        account={selectedAccount}
+        onEdit={handleEditAccount}
+        onDelete={handleDeleteAccount}
       />
     </>
   );
@@ -119,5 +183,18 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    paddingVertical: 40,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: "center",
   },
 });

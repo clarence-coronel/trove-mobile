@@ -57,12 +57,7 @@ export default function OverviewTab() {
   const totalBalance = mockTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.background.secondary },
-      ]}
-    >
+    <View style={styles.container}>
       <LinearGradient
         colors={["#3ca940", "#10871a", "#065b0f"]}
         start={{ x: 0, y: 0 }}

@@ -1,78 +1,114 @@
 import TransactionList from "@/components/transaction-list";
+
 import useColorTheme from "@/hooks/useColorTheme";
+import { database, Transaction } from "@/lib/db/database";
+import { useFocusEffect } from "@react-navigation/native";
 import * as React from "react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
+  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  // TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Text, TextInput } from "react-native-paper";
-import { SceneMap, TabBar, TabView } from "react-native-tab-view";
-
-interface Earning {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-}
+import { TabBar, TabView } from "react-native-tab-view";
 
 export default function EarningsScreen() {
   const { theme } = useColorTheme();
 
-  const [earnings, setEarnings] = useState<Earning[]>([
-    {
-      id: "1",
-      description: "Freelance Project",
-      amount: 12000,
-      date: "2025-10-15",
-    },
-    { id: "2", description: "Bonus", amount: 8000, date: "2025-10-10" },
-    {
-      id: "3",
-      description: "Freelance Project",
-      amount: 12000,
-      date: "2025-10-15",
-    },
-    { id: "4", description: "Bonus", amount: 8000, date: "2025-10-10" },
-    {
-      id: "5",
-      description: "Freelance Project",
-      amount: 12000,
-      date: "2025-10-15",
-    },
-    { id: "6", description: "Bonus", amount: 8000, date: "2025-10-10" },
-    {
-      id: "7",
-      description: "Freelance Project",
-      amount: 12000,
-      date: "2025-10-15",
-    },
-    { id: "8", description: "Bonus", amount: 8000, date: "2025-10-10" },
-  ]);
+  const [earnings, setEarnings] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [newDesc, setNewDesc] = useState("");
   const [newAmount, setNewAmount] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
-  const addEarning = () => {
-    if (!newDesc || !newAmount) return;
-    const amountNum = parseFloat(newAmount);
-    if (isNaN(amountNum)) return;
+  // Load earnings from database
+  const loadEarnings = async () => {
+    try {
+      setLoading(true);
+      const transactions = await database.getTransactionsByType("EARNING");
+      setEarnings(transactions);
+    } catch (error) {
+      console.error("Failed to load earnings:", error);
+      Alert.alert("Error", "Failed to load earnings");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const newEarning: Earning = {
-      id: (earnings.length + 1).toString(),
-      description: newDesc,
-      amount: amountNum,
-      date: new Date().toISOString().split("T")[0],
+  // Reload earnings when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadEarnings();
+    }, [])
+  );
+
+  // Load first account ID on mount
+  React.useEffect(() => {
+    const loadDefaultAccount = async () => {
+      try {
+        const accounts = await database.getAllAccounts();
+        if (accounts.length > 0) {
+          setSelectedAccountId(accounts[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load accounts:", error);
+      }
     };
-    setEarnings([newEarning, ...earnings]);
-    setNewDesc("");
-    setNewAmount("");
+    loadDefaultAccount();
+  }, []);
+
+  const addEarning = async () => {
+    if (!newDesc || !newAmount) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    if (!selectedAccountId) {
+      Alert.alert(
+        "Error",
+        "No account selected. Please create an account first."
+      );
+      return;
+    }
+
+    const amountNum = parseFloat(newAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      Alert.alert("Error", "Please enter a valid amount");
+      return;
+    }
+
+    try {
+      await database.addTransaction({
+        name: newDesc,
+        type: "EARNING",
+        amount: amountNum,
+        accountId: selectedAccountId,
+      });
+
+      // Update account balance
+      const account = await database.getAccountById(selectedAccountId);
+      if (account) {
+        await database.updateAccountBalance(
+          selectedAccountId,
+          account.balance + amountNum
+        );
+      }
+
+      setNewDesc("");
+      setNewAmount("");
+      loadEarnings(); // Refresh the list
+      Alert.alert("Success", "Earning added successfully!");
+    } catch (error) {
+      console.error("Failed to add earning:", error);
+      Alert.alert("Error", "Failed to add earning");
+    }
   };
 
   // Add Earning tab
@@ -123,7 +159,19 @@ export default function EarningsScreen() {
   // Transactions tab
   const ListTab = () => (
     <View style={{ padding: 16, paddingBottom: 0 }}>
-      <TransactionList transactions={earnings} />
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <Text>Loading earnings...</Text>
+        </View>
+      ) : earnings.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={{ color: theme.text.secondary }}>
+            No earnings yet. Add your first earning!
+          </Text>
+        </View>
+      ) : (
+        <TransactionList transactions={earnings} onRefresh={loadEarnings} />
+      )}
     </View>
   );
 
@@ -138,10 +186,16 @@ export default function EarningsScreen() {
     <TabView
       style={{ backgroundColor: theme.background.secondary }}
       navigationState={{ index, routes }}
-      renderScene={SceneMap({
-        form: AddTab,
-        history: ListTab,
-      })}
+      renderScene={({ route }) => {
+        switch (route.key) {
+          case "form":
+            return <AddTab />;
+          case "history":
+            return <ListTab />;
+          default:
+            return null;
+        }
+      }}
       onIndexChange={setIndex}
       initialLayout={{ width: Dimensions.get("window").width }}
       renderTabBar={(props) => (
@@ -185,4 +239,10 @@ const styles = StyleSheet.create({
   desc: { fontSize: 16, fontWeight: "500" },
   amount: { fontSize: 16, fontWeight: "bold", color: "#10871a", marginTop: 4 },
   date: { fontSize: 12 },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
 });

@@ -1,14 +1,13 @@
 import AccountsTab from "@/components/accounts/accounts-tab";
 import OverviewTab from "@/components/accounts/overview-tab";
 import { View } from "@/components/Themed";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
+import useColorTheme from "@/hooks/useColorTheme";
 import * as React from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 export default function AccountsScreen() {
-  const colorScheme = useColorScheme();
+  const { theme, mode } = useColorTheme();
   const layout = useWindowDimensions();
 
   const [index, setIndex] = React.useState(0);
@@ -23,7 +22,12 @@ export default function AccountsScreen() {
   });
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.background.secondary },
+      ]}
+    >
       {/* Tab View */}
       <TabView
         navigationState={{ index, routes }}
@@ -34,14 +38,13 @@ export default function AccountsScreen() {
           <TabBar
             {...props}
             indicatorStyle={{
-              backgroundColor: Colors[colorScheme ?? "light"].tint,
+              backgroundColor: theme.tint,
             }}
             style={{
-              backgroundColor:
-                Colors[colorScheme ?? "light"].background.primary,
+              backgroundColor: theme.background.primary,
             }}
-            activeColor={Colors[colorScheme ?? "light"].tint} // active tab text color
-            inactiveColor={colorScheme === "dark" ? "#888" : "#555"} // inactive tab text color
+            activeColor={theme.tint} // active tab text color
+            inactiveColor={mode === "dark" ? "#888" : "#555"} // inactive tab text color
           />
         )}
       />

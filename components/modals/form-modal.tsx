@@ -12,7 +12,8 @@ import {
 interface FormModalProps {
   visible: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
+  headerRight?: React.ReactNode;
   children: React.ReactNode;
   onSubmit: () => void;
   submitText?: string;
@@ -23,6 +24,7 @@ export default function FormModal({
   visible,
   onClose,
   title,
+  headerRight,
   children,
   onSubmit,
   submitText = "Submit",
@@ -45,9 +47,20 @@ export default function FormModal({
           ]}
         >
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>
-              {title}
-            </Text>
+            {(title || headerRight) && (
+              <View style={styles.headerContainer}>
+                {title && (
+                  <Text
+                    style={[styles.modalTitle, { color: theme.text.primary }]}
+                  >
+                    {title}
+                  </Text>
+                )}
+                {headerRight && (
+                  <View style={styles.headerRight}>{headerRight}</View>
+                )}
+              </View>
+            )}
 
             {children}
 
@@ -99,10 +112,20 @@ const styles = StyleSheet.create({
     padding: 24,
     maxHeight: "90%",
   },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: 24,
+    flex: 1,
+    lineHeight: 32,
+  },
+  headerRight: {
+    marginLeft: 12,
   },
   buttonContainer: {
     flexDirection: "row",

@@ -13,7 +13,8 @@ interface CardProps {
   cardholder?: string;
   cardType?: AccountType;
   initialVisibility?: boolean;
-  textColor?: string | null; // new prop
+  textColor?: string | null;
+  onEdit?: () => void;
 }
 
 export default function Card({
@@ -24,6 +25,7 @@ export default function Card({
   cardType = "SAVINGS",
   initialVisibility = false,
   textColor = null,
+  onEdit,
 }: CardProps) {
   const [isVisible, setIsVisible] = useState(initialVisibility);
 
@@ -51,22 +53,27 @@ export default function Card({
         <View style={styles.container}>
           {/* Header with bank name and edit button */}
           <View style={styles.header}>
-            <View>
-              <Text style={[styles.bankName, { color: effectiveTextColor }]}>
+            <View style={styles.headerTextContainer}>
+              <Text
+                style={[styles.bankName, { color: effectiveTextColor }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {bankName}
               </Text>
               {nickname && (
-                <Text style={[styles.nickname, { color: effectiveTextColor }]}>
+                <Text
+                  style={[styles.nickname, { color: effectiveTextColor }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {nickname}
                 </Text>
               )}
             </View>
 
             {/* Edit button */}
-            <TouchableOpacity
-              onPress={() => console.log("Edit pressed")}
-              style={styles.editButton}
-            >
+            <TouchableOpacity onPress={onEdit} style={styles.editButton}>
               <MaterialCommunityIcons
                 name="pencil"
                 size={24}
@@ -76,7 +83,7 @@ export default function Card({
           </View>
 
           {/* Balance */}
-          <View>
+          <View style={styles.balanceSection}>
             <Text style={[styles.label, { color: effectiveTextColor }]}>
               AVAILABLE BALANCE
             </Text>
@@ -84,13 +91,17 @@ export default function Card({
             <TouchableOpacity
               onPress={toggleVisibility}
               style={styles.eyeButton}
-              activeOpacity={1} // prevents opacity animation
+              activeOpacity={1}
             >
               <View style={styles.balanceContainer}>
                 <Text style={[styles.balance, { color: effectiveTextColor }]}>
                   ₱
                 </Text>
-                <Text style={[styles.balance, { color: effectiveTextColor }]}>
+                <Text
+                  style={[styles.balance, { color: effectiveTextColor }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {isVisible ? formatBalance(balance) : "••••••"}
                 </Text>
 
@@ -98,6 +109,7 @@ export default function Card({
                   name={isVisible ? "eye" : "eye-off"}
                   size={24}
                   color={effectiveTextColor}
+                  style={styles.eyeIcon}
                 />
               </View>
             </TouchableOpacity>
@@ -105,19 +117,27 @@ export default function Card({
 
           {/* Footer */}
           <View style={styles.footer}>
-            <View>
+            <View style={styles.footerItem}>
               <Text style={[styles.label, { color: effectiveTextColor }]}>
                 ACCOUNT NAME
               </Text>
-              <Text style={[styles.value, { color: effectiveTextColor }]}>
+              <Text
+                style={[styles.value, { color: effectiveTextColor }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {cardholder}
               </Text>
             </View>
-            <View>
+            <View style={styles.footerType}>
               <Text style={[styles.label, { color: effectiveTextColor }]}>
                 TYPE
               </Text>
-              <Text style={[styles.value, { color: effectiveTextColor }]}>
+              <Text
+                style={[styles.value, { color: effectiveTextColor }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {cardType}
               </Text>
             </View>
@@ -131,7 +151,7 @@ export default function Card({
 const styles = StyleSheet.create({
   cardContainer: {
     width: "100%",
-    aspectRatio: 1.5, // width:height ratio (e.g., 2:1)
+    aspectRatio: 1.5,
     borderRadius: 16,
     overflow: "hidden",
   },
@@ -149,20 +169,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
+    maxWidth: "100%",
+  },
+  headerTextContainer: {
+    flex: 1,
+    minWidth: 0,
+    maxWidth: "100%",
   },
   editButton: {
     padding: 4,
     borderRadius: 4,
     alignSelf: "flex-start",
+    flexShrink: 0,
   },
   bankName: {
     fontSize: 22,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
+  balanceSection: {
+    maxWidth: "100%",
+  },
   eyeButton: {
     alignSelf: "flex-start",
     borderRadius: 4,
+    maxWidth: "100%",
+  },
+  eyeIcon: {
+    flexShrink: 0,
   },
   nickname: {
     fontSize: 14,
@@ -185,15 +220,27 @@ const styles = StyleSheet.create({
   },
   balance: {
     fontSize: 32,
+    flexShrink: 1,
+    minWidth: 0,
   },
   balanceContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+    maxWidth: "100%",
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
+    gap: 8,
+  },
+  footerItem: {
+    flex: 1,
+    minWidth: 0,
+  },
+  footerType: {
+    flexShrink: 0,
+    minWidth: 60,
   },
 });
