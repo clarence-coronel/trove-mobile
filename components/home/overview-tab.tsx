@@ -1,60 +1,59 @@
 import useColorTheme from "@/hooks/useColorTheme";
+import { database, Transaction } from "@/lib/db/database";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Text } from "react-native-paper";
 import TransactionList from "../transaction-list";
-
-// Mock transaction data
-const mockTransactions = [
-  {
-    id: "1",
-    description: "Grocery Shopping",
-    amount: -1250.75,
-    date: "2025-10-15T14:35",
-  },
-  { id: "2", description: "Salary", amount: 50000, date: "2025-10-14T09:00" },
-  { id: "3", description: "Coffee", amount: -150, date: "2025-10-14T08:30" },
-  {
-    id: "4",
-    description: "Electric Bill",
-    amount: -3200,
-    date: "2025-10-13T17:45",
-  },
-  {
-    id: "5",
-    description: "Freelance Payment",
-    amount: 12000,
-    date: "2025-10-12T12:15",
-  },
-  {
-    id: "6",
-    description: "Netflix Subscription",
-    amount: -499,
-    date: "2025-10-12T20:00",
-  },
-  {
-    id: "7",
-    description: "Dining Out",
-    amount: -1800,
-    date: "2025-10-11T19:30",
-  },
-  { id: "8", description: "Bonus", amount: 10000, date: "2025-10-10T10:00" },
-  { id: "9", description: "Gasoline", amount: -2200, date: "2025-10-10T16:20" },
-  {
-    id: "10",
-    description: "Amazon Purchase",
-    amount: -3200,
-    date: "2025-10-09T15:10",
-  },
-];
 
 export default function OverviewTab() {
   const { theme } = useColorTheme();
 
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalBalance, setTotalBalance] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
-  const totalBalance = mockTransactions.reduce((sum, t) => sum + t.amount, 0);
+
+  const loadOverviewData = async () => {
+    try {
+      setLoading(true);
+      const [fetchedTransactions, total] = await Promise.all([
+        database.getAllTransactions(),
+        database.getTotalBalance(),
+      ]);
+
+      setTransactions(fetchedTransactions);
+      setTotalBalance(total);
+    } catch (error) {
+      console.error("Failed to load overview data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadOverviewData();
+    }, [])
+  );
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color={theme.text.primary} />
+        <Text style={{ color: theme.text.primary, marginTop: 10 }}>
+          Loading...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -83,7 +82,18 @@ export default function OverviewTab() {
         </TouchableOpacity>
       </LinearGradient>
 
-      <TransactionList transactions={mockTransactions} />
+      {transactions.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={{ color: theme.text.secondary }}>
+            No transactions yet.
+          </Text>
+        </View>
+      ) : (
+        <TransactionList
+          transactions={transactions}
+          onRefresh={loadOverviewData}
+        />
+      )}
     </View>
   );
 }
@@ -103,13 +113,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   totalAmount: { fontSize: 32, color: "#fff", fontWeight: "bold" },
-  listContent: { paddingBottom: 20, gap: 12 },
-  transactionItem: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  transactionDesc: { fontSize: 16, fontWeight: "500" },
-  transactionAmount: { fontSize: 16, fontWeight: "bold", marginTop: 4 },
-  transactionDate: { fontSize: 12, marginTop: 2 },
 });

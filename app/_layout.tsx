@@ -4,6 +4,7 @@ import {
   DefaultTheme as NavigationDefaultTheme,
   ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -58,6 +59,8 @@ function RootLayoutNav() {
 
   const [dbInitialized, setDbInitialized] = useState(false);
 
+  const queryClient = new QueryClient();
+
   // Paper themes
   const paperTheme = isDark ? MD3DarkTheme : MD3LightTheme;
   // Navigation themes
@@ -83,23 +86,29 @@ function RootLayoutNav() {
 
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={paperTheme}>
-        <NavigationThemeProvider value={navigationTheme}>
-          <StatusBar style={isDark ? "light" : "dark"} />
+      <QueryClientProvider client={queryClient}>
+        x
+        <PaperProvider theme={paperTheme}>
+          <NavigationThemeProvider value={navigationTheme}>
+            <StatusBar style={isDark ? "light" : "dark"} />
 
-          <SafeAreaView
-            style={{
-              flex: 1,
-              backgroundColor: isDark ? "#000000" : "#ffffff",
-            }}
-          >
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-            </Stack>
-          </SafeAreaView>
-        </NavigationThemeProvider>
-      </PaperProvider>
+            <SafeAreaView
+              style={{
+                flex: 1,
+                backgroundColor: isDark ? "#000000" : "#ffffff",
+              }}
+            >
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="modal"
+                  options={{ presentation: "modal" }}
+                />
+              </Stack>
+            </SafeAreaView>
+          </NavigationThemeProvider>
+        </PaperProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }

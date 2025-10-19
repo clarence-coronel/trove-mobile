@@ -393,9 +393,10 @@ class Database {
     const now = new Date().toISOString();
     const datetime = transaction.datetime || now;
 
+    // Insert transaction record
     await this.db.runAsync(
-      `INSERT INTO transactions (id, name, type, amount, datetime, accountId, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO transactions (id, name, type, amount, datetime, accountId, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         transaction.name,
@@ -407,6 +408,25 @@ class Database {
         now,
       ]
     );
+
+    // ✅ Update account balance automatically
+    const account: Account | null = await this.db.getFirstAsync(
+      `SELECT balance FROM accounts WHERE id = ?`,
+      [transaction.accountId]
+    );
+
+    if (account) {
+      const currentBalance = account.balance ?? 0;
+      const newBalance =
+        transaction.type === "EARNING"
+          ? currentBalance + transaction.amount
+          : currentBalance - transaction.amount;
+
+      await this.db.runAsync(
+        `UPDATE accounts SET balance = ?, updatedAt = ? WHERE id = ?`,
+        [newBalance, now, transaction.accountId]
+      );
+    }
 
     return id;
   }
