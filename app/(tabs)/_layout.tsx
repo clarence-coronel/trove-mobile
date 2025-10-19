@@ -18,7 +18,7 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, false),
         tabBarStyle: {
           height: 60, // reduced height
-          backgroundColor: Colors[colorScheme ?? "light"].background,
+          backgroundColor: Colors[colorScheme ?? "light"].background.primary,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.05,
@@ -53,7 +53,8 @@ export default function TabLayout() {
                   styles.centerIconContainer,
                   {
                     borderColor: color,
-                    backgroundColor: Colors[colorScheme ?? "light"].background,
+                    backgroundColor:
+                      Colors[colorScheme ?? "light"].background.primary,
                   },
                 ]}
               >

@@ -1,5 +1,6 @@
+import useColorTheme from "@/hooks/useColorTheme";
 import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Card, { AccountType } from "./card";
 
 const sampleAccounts = [
@@ -41,11 +42,31 @@ const sampleAccounts = [
 ];
 
 export default function AccountsTab() {
+  const { theme } = useColorTheme();
+
   return (
     <FlatList
       data={sampleAccounts}
       keyExtractor={(_, index) => index.toString()}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[
+        styles.listContent,
+        { backgroundColor: theme.background.secondary },
+      ]}
+      ListHeaderComponent={
+        <TouchableOpacity
+          style={[
+            styles.addButton,
+            {
+              borderColor: theme.tint,
+            },
+          ]}
+          onPress={() => console.log("Add Account pressed")}
+        >
+          <Text style={[styles.addButtonText, { color: theme.tint }]}>
+            Add Account
+          </Text>
+        </TouchableOpacity>
+      }
       renderItem={({ item }) => (
         <Card
           bankName={item.bankName}
@@ -61,5 +82,20 @@ export default function AccountsTab() {
 }
 
 const styles = StyleSheet.create({
-  listContent: { padding: 20, gap: 20 },
+  listContent: {
+    padding: 20,
+    gap: 20,
+  },
+  addButton: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+    borderWidth: 1.5,
+  },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });

@@ -37,7 +37,8 @@ export default function AccountsScreen() {
               backgroundColor: Colors[colorScheme ?? "light"].tint,
             }}
             style={{
-              backgroundColor: Colors[colorScheme ?? "light"].background,
+              backgroundColor:
+                Colors[colorScheme ?? "light"].background.primary,
             }}
             activeColor={Colors[colorScheme ?? "light"].tint} // active tab text color
             inactiveColor={colorScheme === "dark" ? "#888" : "#555"} // inactive tab text color

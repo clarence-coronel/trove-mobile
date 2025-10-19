@@ -1,10 +1,10 @@
-import Colors from "@/constants/Colors";
+import useColorTheme from "@/hooks/useColorTheme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
-import { useColorScheme } from "../useColorScheme";
+import TransactionList from "../transaction-list";
 
 // Mock transaction data
 const mockTransactions = [
@@ -50,32 +50,19 @@ const mockTransactions = [
   },
 ];
 
-const formatDateTime = (isoString: string) => {
-  const date = new Date(isoString);
-  const options: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  };
-  const formattedDate = date.toLocaleDateString(undefined, options);
-  const formattedTime = date.toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${formattedDate} @ ${formattedTime}`;
-};
-
 export default function OverviewTab() {
-  const theme = useColorScheme();
-  const dividerColor = Colors[theme ?? "light"].divider;
-  const effectiveTextColor = "#fff";
+  const { theme } = useColorTheme();
 
   const [isVisible, setIsVisible] = useState(true);
   const totalBalance = mockTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <View style={styles.container}>
-      {/* Total Balance */}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.background.secondary },
+      ]}
+    >
       <LinearGradient
         colors={["#3ca940", "#10871a", "#065b0f"]}
         start={{ x: 0, y: 0 }}
@@ -95,41 +82,19 @@ export default function OverviewTab() {
             <MaterialCommunityIcons
               name={isVisible ? "eye" : "eye-off"}
               size={28}
-              color={effectiveTextColor}
+              color={"#fff"}
             />
           </View>
         </TouchableOpacity>
       </LinearGradient>
 
-      {/* Transactions List */}
-      <FlatList
-        data={mockTransactions}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <View style={styles.transactionItem}>
-            <Text style={styles.transactionDesc}>{item.description}</Text>
-            <Text
-              style={[
-                styles.transactionAmount,
-                { color: item.amount < 0 ? "#FF4D4D" : "#10871a" },
-              ]}
-            >
-              {item.amount < 0 ? "-" : "+"}₱{" "}
-              {Math.abs(item.amount).toLocaleString()}
-            </Text>
-            <Text style={styles.transactionDate}>
-              {formatDateTime(item.date)}
-            </Text>
-          </View>
-        )}
-      />
+      <TransactionList transactions={mockTransactions} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, padding: 16, paddingBottom: 0 },
   totalCard: {
     borderRadius: 12,
     padding: 24,
@@ -143,14 +108,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   totalAmount: { fontSize: 32, color: "#fff", fontWeight: "bold" },
-  listContent: { paddingBottom: 20 },
+  listContent: { paddingBottom: 20, gap: 12 },
   transactionItem: {
-    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
   },
   transactionDesc: { fontSize: 16, fontWeight: "500" },
   transactionAmount: { fontSize: 16, fontWeight: "bold", marginTop: 4 },
-  transactionDate: { fontSize: 12, color: "#888", marginTop: 2 },
+  transactionDate: { fontSize: 12, marginTop: 2 },
 });

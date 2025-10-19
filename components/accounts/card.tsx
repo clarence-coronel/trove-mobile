@@ -27,7 +27,6 @@ export default function Card({
 }: CardProps) {
   const [isVisible, setIsVisible] = useState(initialVisibility);
 
-  // default to white if null or undefined
   const effectiveTextColor = textColor ?? "#FFFFFF";
 
   const toggleVisibility = () => {

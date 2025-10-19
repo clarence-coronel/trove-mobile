@@ -1,17 +1,18 @@
+import TransactionList from "@/components/transaction-list";
+import useColorTheme from "@/hooks/useColorTheme";
 import * as React from "react";
 import { useState } from "react";
 import {
   Dimensions,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  TextInput,
+  // TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 interface Earning {
@@ -22,6 +23,8 @@ interface Earning {
 }
 
 export default function EarningsScreen() {
+  const { theme } = useColorTheme();
+
   const [earnings, setEarnings] = useState<Earning[]>([
     {
       id: "1",
@@ -83,20 +86,32 @@ export default function EarningsScreen() {
         contentContainerStyle={styles.centeredContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.addContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Description"
-            value={newDesc}
-            onChangeText={setNewDesc}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Amount"
-            value={newAmount}
-            onChangeText={setNewAmount}
-            keyboardType="numeric"
-          />
+        <View
+          style={[
+            styles.addContainer,
+            { backgroundColor: theme.background.primary },
+          ]}
+        >
+          <View style={{ gap: 10 }}>
+            <TextInput
+              style={[styles.input]}
+              mode="flat"
+              underlineColor="transparent"
+              placeholder="Description"
+              value={newDesc}
+              onChangeText={setNewDesc}
+            />
+            <TextInput
+              style={styles.input}
+              mode="flat"
+              underlineColor="transparent"
+              placeholder="Amount"
+              value={newAmount}
+              onChangeText={setNewAmount}
+              keyboardType="numeric"
+            />
+          </View>
+
           <TouchableOpacity style={styles.addButton} onPress={addEarning}>
             <Text style={styles.addButtonText}>Add Earning</Text>
           </TouchableOpacity>
@@ -107,19 +122,9 @@ export default function EarningsScreen() {
 
   // Transactions tab
   const ListTab = () => (
-    <FlatList
-      style={styles.tabContainer}
-      data={earnings}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.listContent}
-      renderItem={({ item }) => (
-        <View style={styles.earningItem}>
-          <Text style={styles.desc}>{item.description}</Text>
-          <Text style={styles.amount}>₱ {item.amount.toLocaleString()}</Text>
-          <Text style={styles.date}>{item.date}</Text>
-        </View>
-      )}
-    />
+    <View style={{ padding: 16, paddingBottom: 0 }}>
+      <TransactionList transactions={earnings} />
+    </View>
   );
 
   // TabView state
@@ -131,6 +136,7 @@ export default function EarningsScreen() {
 
   return (
     <TabView
+      style={{ backgroundColor: theme.background.secondary }}
       navigationState={{ index, routes }}
       renderScene={SceneMap({
         form: AddTab,
@@ -142,7 +148,7 @@ export default function EarningsScreen() {
         <TabBar
           {...props}
           indicatorStyle={{ backgroundColor: "#10871a" }}
-          style={{ backgroundColor: "#fff" }}
+          style={{ backgroundColor: theme.background.primary }}
           activeColor="#10871a"
           inactiveColor="#888"
         />
@@ -155,16 +161,13 @@ const styles = StyleSheet.create({
   tabContainer: { flex: 1, backgroundColor: "#f5f5f5" },
   centeredContent: { flexGrow: 1, justifyContent: "center", padding: 20 },
   addContainer: {
-    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 12,
+    gap: 24,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
   },
   addButton: {
     backgroundColor: "#10871a",
@@ -175,12 +178,11 @@ const styles = StyleSheet.create({
   addButtonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
   listContent: { padding: 20 },
   earningItem: {
-    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
   },
   desc: { fontSize: 16, fontWeight: "500" },
   amount: { fontSize: 16, fontWeight: "bold", color: "#10871a", marginTop: 4 },
-  date: { fontSize: 12, color: "#888", marginTop: 2 },
+  date: { fontSize: 12 },
 });
