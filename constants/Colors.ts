@@ -5,13 +5,14 @@ export default {
   light: {
     text: {
       primary: "#000",
-      secondary: "",
+      secondary: "#666",
     },
     background: { primary: "#fff", secondary: "#f1efefff" },
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
     divider: "#ddd",
+    error: "#dc2626",
   },
   dark: {
     text: {
@@ -23,5 +24,6 @@ export default {
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorDark,
     divider: "#444",
+    error: "#ef4444",
   },
 };

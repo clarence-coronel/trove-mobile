@@ -1,6 +1,8 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import React from "react";
+import React, { useState } from "react";
 import { FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
+
+import AddAccountModal from "./add-account-modal";
 import Card, { AccountType } from "./card";
 
 const sampleAccounts = [
@@ -43,41 +45,61 @@ const sampleAccounts = [
 
 export default function AccountsTab() {
   const { theme } = useColorTheme();
+  const [accounts, setAccounts] = useState(sampleAccounts);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleAddAccount = (newAccount: {
+    bankName: string;
+    nickname: string;
+    balance: number;
+    cardholder: string;
+    cardType: AccountType;
+  }) => {
+    setAccounts([...accounts, newAccount]);
+  };
 
   return (
-    <FlatList
-      data={sampleAccounts}
-      keyExtractor={(_, index) => index.toString()}
-      contentContainerStyle={[
-        styles.listContent,
-        { backgroundColor: theme.background.secondary },
-      ]}
-      ListHeaderComponent={
-        <TouchableOpacity
-          style={[
-            styles.addButton,
-            {
-              borderColor: theme.tint,
-            },
-          ]}
-          onPress={() => console.log("Add Account pressed")}
-        >
-          <Text style={[styles.addButtonText, { color: theme.tint }]}>
-            Add Account
-          </Text>
-        </TouchableOpacity>
-      }
-      renderItem={({ item }) => (
-        <Card
-          bankName={item.bankName}
-          nickname={item.nickname}
-          balance={item.balance}
-          cardholder={item.cardholder}
-          cardType={item.cardType}
-        />
-      )}
-      showsVerticalScrollIndicator={true}
-    />
+    <>
+      <FlatList
+        data={accounts}
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={[
+          styles.listContent,
+          { backgroundColor: theme.background.secondary },
+        ]}
+        ListHeaderComponent={
+          <TouchableOpacity
+            style={[
+              styles.addButton,
+              {
+                borderColor: theme.tint,
+              },
+            ]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={[styles.addButtonText, { color: theme.tint }]}>
+              Add Account
+            </Text>
+          </TouchableOpacity>
+        }
+        renderItem={({ item }) => (
+          <Card
+            bankName={item.bankName}
+            nickname={item.nickname}
+            balance={item.balance}
+            cardholder={item.cardholder}
+            cardType={item.cardType}
+          />
+        )}
+        showsVerticalScrollIndicator={true}
+      />
+
+      <AddAccountModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onAdd={handleAddAccount}
+      />
+    </>
   );
 }
 
