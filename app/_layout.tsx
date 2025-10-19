@@ -87,7 +87,6 @@ function RootLayoutNav() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        x
         <PaperProvider theme={paperTheme}>
           <NavigationThemeProvider value={navigationTheme}>
             <StatusBar style={isDark ? "light" : "dark"} />
