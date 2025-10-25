@@ -1,7 +1,6 @@
-import { Transaction } from "@/lib/db/database";
+import { Transaction } from "@/lib/db";
 import React from "react";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import TransactionCard from "./transaction-card ";
 
 interface Props {
@@ -25,14 +24,6 @@ export default function TransactionList({
     }
   };
 
-  if (transactions.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No transactions yet</Text>
-      </View>
-    );
-  }
-
   return (
     <FlatList
       data={transactions}
@@ -44,6 +35,7 @@ export default function TransactionList({
           amount={item.amount}
           date={item.datetime}
           type={item.type}
+          account={item.account}
         />
       )}
       refreshControl={
@@ -56,17 +48,21 @@ export default function TransactionList({
           />
         ) : undefined
       }
+      ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText]}>No transactions</Text>
+        </View>
+      }
     />
   );
 }
 
 const styles = StyleSheet.create({
-  listContent: { paddingBottom: 20, gap: 12 },
+  listContent: { paddingBottom: 20, gap: 12, flex: 1 },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
   },
   emptyText: {
     fontSize: 16,

@@ -1,5 +1,6 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import { database, Transaction } from "@/lib/db/database";
+
+import { database, Transaction } from "@/lib/db";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -25,8 +26,8 @@ export default function OverviewTab() {
     try {
       setLoading(true);
       const [fetchedTransactions, total] = await Promise.all([
-        database.getAllTransactions(),
-        database.getTotalBalance(),
+        database.transactions.getAll(),
+        database.accounts.getTotalBalance(),
       ]);
 
       setTransactions(fetchedTransactions);
@@ -82,18 +83,10 @@ export default function OverviewTab() {
         </TouchableOpacity>
       </LinearGradient>
 
-      {transactions.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={{ color: theme.text.secondary }}>
-            No transactions yet.
-          </Text>
-        </View>
-      ) : (
-        <TransactionList
-          transactions={transactions}
-          onRefresh={loadOverviewData}
-        />
-      )}
+      <TransactionList
+        transactions={transactions}
+        onRefresh={loadOverviewData}
+      />
     </View>
   );
 }

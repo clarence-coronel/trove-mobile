@@ -39,12 +39,18 @@ export default function FormModal({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
           style={[
             styles.modalContent,
             { backgroundColor: theme.background.primary },
           ]}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
         >
           <ScrollView showsVerticalScrollIndicator={false}>
             {(title || headerRight) && (
@@ -94,8 +100,8 @@ export default function FormModal({
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 }

@@ -18,6 +18,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import "react-native-reanimated";
+import Toast from "react-native-toast-message";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { database } from "@/lib/db/database";
@@ -104,6 +105,7 @@ function RootLayoutNav() {
                   options={{ presentation: "modal" }}
                 />
               </Stack>
+              <Toast />
             </SafeAreaView>
           </NavigationThemeProvider>
         </PaperProvider>

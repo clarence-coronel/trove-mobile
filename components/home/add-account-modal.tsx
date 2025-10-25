@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 
-import { AccountType, NewAccount } from "@/lib/db/database";
+import { AccountType, NewAccount } from "@/lib/db";
+import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
+import Toast from "react-native-toast-message";
 import { FormField } from "../forms/form-field";
 import { FormSelector } from "../forms/form-selector";
 import FormModal from "../modals/form-modal";
 
-const accountTypes: AccountType[] = ["SAVINGS", "CHECKING", "E-WALLET"];
+const accountTypes: { label: string; value: AccountType }[] = [
+  { label: "SAVINGS", value: "SAVINGS" },
+  { label: "CHECKING", value: "CHECKING" },
+  { label: "E-WALLET", value: "E-WALLET" },
+  { label: "CASH", value: "CASH" },
+];
 
 const MAX_PROVIDER_LENGTH = 50;
 const MAX_NICKNAME_LENGTH = 50;
@@ -39,35 +46,18 @@ export default function AddAccountModal({
     type: "SAVINGS",
   });
 
-  const formatNumberWithCommas = (value: string): string => {
-    // Remove all non-digit and non-decimal characters
-    const cleaned = value.replace(/[^\d.]/g, "");
-
-    // Split by decimal point
-    const parts = cleaned.split(".");
-
-    // Format the integer part with commas
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-    // Return formatted number (limit to 2 decimal places)
-    return parts.length > 1 ? `${parts[0]}.${parts[1].slice(0, 2)}` : parts[0];
-  };
-
-  const parseFormattedNumber = (value: string): number => {
-    return parseFloat(value.replace(/,/g, "")) || 0;
-  };
-
   const handleBalanceChange = (text: string) => {
     // Remove commas for parsing
     const numericValue = parseFormattedNumber(text);
 
     // Check if it exceeds max balance
     if (numericValue > MAX_BALANCE) {
-      alert(
-        `Balance cannot exceed ${formatNumberWithCommas(
+      Toast.show({
+        type: "error",
+        text1: `Balance cannot exceed ${formatNumberWithCommas(
           MAX_BALANCE.toString()
-        )}`
-      );
+        )}`,
+      });
       return;
     }
 
@@ -78,7 +68,10 @@ export default function AddAccountModal({
 
   const handleSubmit = () => {
     if (!formData.provider || !formData.accountName || !formData.type) {
-      alert("Please fill in all required fields");
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields",
+      });
       return;
     }
 
@@ -86,11 +79,12 @@ export default function AddAccountModal({
       formData.balance === "" ? 0 : parseFormattedNumber(formData.balance);
 
     if (balanceValue > MAX_BALANCE) {
-      alert(
-        `Balance cannot exceed ${formatNumberWithCommas(
+      Toast.show({
+        type: "error",
+        text1: `Balance cannot exceed ${formatNumberWithCommas(
           MAX_BALANCE.toString()
-        )}`
-      );
+        )}`,
+      });
       return;
     }
 
@@ -98,7 +92,7 @@ export default function AddAccountModal({
       provider: formData.provider,
       nickname: formData.nickname || null,
       balance: balanceValue,
-      accountName: formData.accountName.toUpperCase(),
+      accountName: formData.accountName,
       type: formData.type,
     };
 
@@ -181,7 +175,9 @@ export default function AddAccountModal({
         required
         options={accountTypes}
         value={formData.type}
-        onChange={(type) => setFormData({ ...formData, type })}
+        onChange={(type) =>
+          setFormData({ ...formData, type: type as AccountType })
+        }
       />
     </FormModal>
   );

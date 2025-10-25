@@ -2,23 +2,25 @@ import useColorTheme from "@/hooks/useColorTheme";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-interface FormSelectorProps<T> {
+type Option = {
   label: string;
-  options: T[];
-  value: T;
-  onChange: (value: T) => void;
-  getLabel?: (option: T) => string;
+  value: string;
+};
+interface FormSelectorProps {
+  label: string;
+  options: Option[];
+  value: string;
+  onChange: (value: string) => void;
   required?: boolean;
 }
 
-export function FormSelector<T extends string>({
+export function FormSelector({
   label,
   options,
   value,
   onChange,
-  getLabel = (option) => option,
   required = false,
-}: FormSelectorProps<T>) {
+}: FormSelectorProps) {
   const { theme } = useColorTheme();
 
   return (
@@ -32,28 +34,31 @@ export function FormSelector<T extends string>({
         )}
       </View>
       <View style={styles.optionsContainer}>
-        {options.map((option) => (
+        {options.map((option, index) => (
           <TouchableOpacity
-            key={option}
+            key={`${option.value}-${index}`}
             style={[
               styles.optionButton,
               {
                 backgroundColor:
-                  value === option ? theme.tint : theme.background.secondary,
+                  value === option.value
+                    ? theme.tint
+                    : theme.background.secondary,
                 borderColor: theme.divider,
               },
             ]}
-            onPress={() => onChange(option)}
+            onPress={() => onChange(option.value)}
           >
             <Text
               style={[
                 styles.optionText,
                 {
-                  color: value === option ? "#FFFFFF" : theme.text.primary,
+                  color:
+                    value === option.value ? "#FFFFFF" : theme.text.primary,
                 },
               ]}
             >
-              {getLabel(option)}
+              {option.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -73,11 +78,13 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   optionButton: {
-    flex: 1,
+    minWidth: "30%",
     paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 10,
     alignItems: "center",
     borderWidth: 1,

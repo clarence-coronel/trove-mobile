@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 
 import useColorTheme from "@/hooks/useColorTheme";
-import { Account, AccountType, NewAccount } from "@/lib/db/database";
+import { Account, AccountType, NewAccount } from "@/lib/db";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Alert, TouchableOpacity } from "react-native";
+import Toast from "react-native-toast-message";
 import { FormField } from "../forms/form-field";
 import { FormSelector } from "../forms/form-selector";
 import FormModal from "../modals/form-modal";
 
-const accountTypes: AccountType[] = ["SAVINGS", "CHECKING", "E-WALLET"];
+const accountTypes: AccountType[] = ["SAVINGS", "CHECKING", "E-WALLET", "CASH"];
 
 interface EditAccountModalProps {
   visible: boolean;
@@ -54,7 +55,10 @@ export default function EditAccountModal({
 
   const handleSubmit = () => {
     if (!formData.provider || !formData.nickname || !formData.accountName) {
-      Alert.alert("Error", "Please fill in all required fields");
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields",
+      });
       return;
     }
 
@@ -144,9 +148,11 @@ export default function EditAccountModal({
       <FormSelector
         label="Account Type"
         required
-        options={accountTypes}
+        options={accountTypes.map((acc) => ({ label: acc, value: acc }))}
         value={formData.type}
-        onChange={(type) => setFormData({ ...formData, type })}
+        onChange={(type) =>
+          setFormData({ ...formData, type: type as AccountType })
+        }
       />
     </FormModal>
   );

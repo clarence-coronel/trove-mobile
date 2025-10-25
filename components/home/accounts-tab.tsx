@@ -2,7 +2,6 @@ import useColorTheme from "@/hooks/useColorTheme";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -10,7 +9,8 @@ import {
   View,
 } from "react-native";
 
-import { Account, database, NewAccount } from "@/lib/db/database";
+import { Account, database, NewAccount } from "@/lib/db";
+import Toast from "react-native-toast-message";
 import AddAccountModal from "./add-account-modal";
 import Card from "./card";
 import EditAccountModal from "./edit-account-modal";
@@ -32,7 +32,7 @@ export default function AccountsTab() {
   const loadAccounts = async () => {
     try {
       setLoading(true);
-      const allAccounts = await database.getAllAccounts();
+      const allAccounts = await database.accounts.getAll();
       setAccounts(allAccounts);
     } catch (error) {
       console.error("Failed to load accounts:", error);
@@ -43,11 +43,14 @@ export default function AccountsTab() {
 
   const handleAddAccount = async (newAccount: NewAccount) => {
     try {
-      await database.addAccount(newAccount);
+      await database.accounts.add(newAccount);
       await loadAccounts();
     } catch (error) {
       console.error("Failed to add account:", error);
-      Alert.alert("Error", "Failed to add account. Please try again.");
+      Toast.show({
+        type: "error",
+        text1: "Failed to add account. Please try again.",
+      });
     }
   };
 
@@ -56,37 +59,53 @@ export default function AccountsTab() {
     updatedAccount: Partial<NewAccount>
   ) => {
     try {
-      const success = await database.updateAccount(id, updatedAccount);
+      const success = await database.accounts.update(id, updatedAccount);
 
       if (success) {
         await loadAccounts();
         setEditModalVisible(false);
         setSelectedAccount(null);
-        Alert.alert("Success", "Account updated successfully!");
+
+        Toast.show({
+          type: "success",
+          text1: "Account updated successfully!",
+        });
       } else {
-        Alert.alert("Error", "Failed to update account. Please try again.");
+        throw new Error("Failed to update account. Please try again.");
       }
     } catch (error) {
       console.error("Failed to edit account:", error);
-      Alert.alert("Error", "Failed to update account. Please try again.");
+
+      Toast.show({
+        type: "error",
+        text1: "Failed to update account. Please try again.",
+      });
     }
   };
 
   const handleDeleteAccount = async (id: string) => {
     try {
-      const success = await database.deleteAccount(id);
+      const success = await database.accounts.delete(id);
 
       if (success) {
         await loadAccounts();
         setEditModalVisible(false);
         setSelectedAccount(null);
-        Alert.alert("Success", "Account deleted successfully!");
+
+        Toast.show({
+          type: "success",
+          text1: "Account deleted successfully!",
+        });
       } else {
-        Alert.alert("Error", "Failed to delete account. Please try again.");
+        throw new Error("Failed to delete account. Please try again.");
       }
     } catch (error) {
       console.error("Failed to delete account:", error);
-      Alert.alert("Error", "Failed to delete account. Please try again.");
+
+      Toast.show({
+        type: "error",
+        text1: "Failed to delete account. Please try again.",
+      });
     }
   };
 
@@ -127,7 +146,7 @@ export default function AccountsTab() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={[styles.emptyText, { color: theme.text.secondary }]}>
-              No accounts yet...
+              Create an account to get started
             </Text>
           </View>
         }
@@ -171,6 +190,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 20,
     gap: 20,
+    flex: 1,
   },
   addButton: {
     paddingVertical: 12,
@@ -192,6 +212,8 @@ const styles = StyleSheet.create({
   emptyContainer: {
     paddingVertical: 40,
     alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
   },
   emptyText: {
     fontSize: 16,

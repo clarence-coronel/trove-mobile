@@ -1,5 +1,5 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import { TransactionType } from "@/lib/db/database";
+import { Account, TransactionType } from "@/lib/db";
 import { formatDateTime } from "@/utils/datetime";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -10,6 +10,7 @@ type Props = {
   amount: number;
   date: string;
   type: TransactionType;
+  account: Account | null;
 };
 
 export default function TransactionCard({
@@ -17,6 +18,7 @@ export default function TransactionCard({
   amount,
   date,
   type,
+  account,
 }: Props) {
   const { theme } = useColorTheme();
 
@@ -38,6 +40,15 @@ export default function TransactionCard({
       >
         {type === "EXPENSE" ? "-" : "+"} ₱ {Math.abs(amount).toLocaleString()}
       </Text>
+      {account && (
+        <Text
+          style={[styles.transactionAccount, { color: theme.text.secondary }]}
+        >
+          {`${account.provider} - ${account.accountName} ${
+            account.accountName ? `- ${account.nickname}` : ""
+          }`}
+        </Text>
+      )}
       <Text style={[styles.transactionDate, { color: theme.text.secondary }]}>
         {formatDateTime(date)}
       </Text>
@@ -53,5 +64,6 @@ const styles = StyleSheet.create({
   },
   transactionDesc: { fontSize: 16, fontWeight: "500" },
   transactionAmount: { fontSize: 16, fontWeight: "bold" },
+  transactionAccount: { fontSize: 12 },
   transactionDate: { fontSize: 12 },
 });
