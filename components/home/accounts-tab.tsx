@@ -1,5 +1,5 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,94 +9,54 @@ import {
   View,
 } from "react-native";
 
-import { Account, database, NewAccount } from "@/lib/db";
+import { Account, NewAccount } from "@/lib/db";
 
-import { toast } from "@backpackapp-io/react-native-toast";
+import {
+  useCreateAccount,
+  useDeleteAccount,
+  useUpdateAccount,
+} from "@/api/accounts/accounts.mutations";
+import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
 import AddAccountModal from "./add-account-modal";
 import Card from "./card";
 import EditAccountModal from "./edit-account-modal";
 
 export default function AccountsTab() {
   const { theme } = useColorTheme();
-  const [accounts, setAccounts] = useState<Account[]>([]);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
-  const [loading, setLoading] = useState(true);
+  const getAllAccounts = useGetAllAccounts();
+  const createAccount = useCreateAccount();
+  const updateAccount = useUpdateAccount();
+  const deleteAccount = useDeleteAccount();
 
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
-  useEffect(() => {
-    loadAccounts();
-  }, []);
-
-  const loadAccounts = async () => {
-    try {
-      setLoading(true);
-      const allAccounts = await database.accounts.getAll();
-      setAccounts(allAccounts);
-    } catch (error) {
-      console.error("Failed to load accounts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAddAccount = async (newAccount: NewAccount) => {
-    try {
-      await database.accounts.add(newAccount);
-      await loadAccounts();
-
-      toast.success(`Account added successfully!`);
-    } catch (error) {
-      console.error("Failed to add account:", error);
-
-      toast.error("Failed to add account. Please try again.");
-    }
+    createAccount.mutate(newAccount);
   };
 
   const handleEditAccount = async (
     id: string,
     updatedAccount: Partial<NewAccount>
   ) => {
-    try {
-      const success = await database.accounts.update(id, updatedAccount);
+    const success = await updateAccount.mutateAsync({
+      id,
+      account: updatedAccount,
+    });
 
-      if (success) {
-        await loadAccounts();
-        setEditModalVisible(false);
-        setSelectedAccount(null);
-
-        toast.success("Account updated successfully!");
-      } else {
-        throw new Error("Failed to update account. Please try again.");
-      }
-    } catch (error) {
-      console.error("Failed to edit account:", error);
-      toast.error("Failed to update account. Please try again.");
-    }
+    if (success) setSelectedAccount(null);
   };
 
   const handleDeleteAccount = async (id: string) => {
-    try {
-      const success = await database.accounts.delete(id);
+    const success = await deleteAccount.mutateAsync(id);
 
-      if (success) {
-        await loadAccounts();
-        setEditModalVisible(false);
-        setSelectedAccount(null);
-
-        toast.success("Account deleted successfully!");
-      } else {
-        throw new Error("Failed to delete account. Please try again.");
-      }
-    } catch (error) {
-      console.error("Failed to delete account:", error);
-      toast.error("Failed to delete account. Please try again.");
-    }
+    if (success) setSelectedAccount(null);
   };
 
-  if (loading) {
+  if (getAllAccounts.isLoading) {
     return (
       <View
         style={[
@@ -112,11 +72,13 @@ export default function AccountsTab() {
   return (
     <>
       <FlatList
-        data={accounts}
+        data={getAllAccounts.data}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,
-          accounts.length === 0 ? { height: "100%" } : null,
+          getAllAccounts.data && getAllAccounts.data.length === 0
+            ? { height: "100%" }
+            : null,
         ]}
         ListHeaderComponent={
           <TouchableOpacity

@@ -1,60 +1,40 @@
 import useColorTheme from "@/hooks/useColorTheme";
 
-import { database, Transaction } from "@/lib/db";
+import { useGetAllAccountsBalance } from "@/api/accounts/accounts.queries";
+import { useGetAllTransactions } from "@/api/transactions/transactions.queries";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Text } from "react-native-paper";
 import TransactionList from "../transaction-list";
 
 export default function OverviewTab() {
   const { theme } = useColorTheme();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [totalBalance, setTotalBalance] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+  const getAllAccountsBalance = useGetAllAccountsBalance();
+  const getAllTransactions = useGetAllTransactions();
+
+  useEffect(() => {
+    console.log("getAllAccountsBalance", getAllAccountsBalance.data);
+  }, [getAllAccountsBalance.data]);
+
   const [isVisible, setIsVisible] = useState(true);
 
-  const loadOverviewData = async () => {
-    try {
-      setLoading(true);
-      const [fetchedTransactions, total] = await Promise.all([
-        database.transactions.getAll(),
-        database.accounts.getTotalBalance(),
-      ]);
-
-      setTransactions(fetchedTransactions);
-      setTotalBalance(total);
-    } catch (error) {
-      console.error("Failed to load overview data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      loadOverviewData();
-    }, [])
-  );
-
-  if (loading) {
+  if (getAllAccountsBalance.isLoading || getAllTransactions.isLoading) {
     return (
       <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={theme.text.primary} />
-        <Text style={{ color: theme.text.primary, marginTop: 10 }}>
-          Loading...
-        </Text>
+        <ActivityIndicator size="large" color={theme.tint} />
       </View>
     );
   }
+
+  if (!getAllAccountsBalance.data || !getAllTransactions.data) return null;
 
   return (
     <View style={styles.container}>
@@ -72,8 +52,11 @@ export default function OverviewTab() {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
             <Text style={styles.totalAmount}>₱</Text>
             <Text style={styles.totalAmount}>
-              {isVisible ? `${totalBalance.toLocaleString()}` : "••••••"}
+              {isVisible
+                ? getAllAccountsBalance.data?.toLocaleString()
+                : "••••••"}
             </Text>
+
             <MaterialCommunityIcons
               name={isVisible ? "eye" : "eye-off"}
               size={28}
@@ -84,8 +67,8 @@ export default function OverviewTab() {
       </LinearGradient>
 
       <TransactionList
-        transactions={transactions}
-        onRefresh={loadOverviewData}
+        transactions={getAllTransactions.data ?? []}
+        onRefresh={getAllTransactions.refetch}
       />
     </View>
   );

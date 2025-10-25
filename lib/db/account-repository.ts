@@ -125,7 +125,9 @@ export class AccountRepository {
       "SELECT SUM(balance) as total FROM accounts"
     );
 
-    return result?.total || 0;
+    // Make sure we're returning a number, not the result object
+    const total = result?.total;
+    return typeof total === "number" ? total : 0;
   }
 
   async getTotalBalanceByType(type: AccountType): Promise<number> {
