@@ -149,12 +149,13 @@ export default function TransactionFormTab({
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <ScrollView
-        contentContainerStyle={styles.centeredContent}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View
           style={[
@@ -239,7 +240,11 @@ export default function TransactionFormTab({
 }
 
 const styles = StyleSheet.create({
-  centeredContent: { flexGrow: 1, justifyContent: "center", padding: 20 },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 40,
+  },
   addContainer: {
     padding: 20,
     borderRadius: 12,

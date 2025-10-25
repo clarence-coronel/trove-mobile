@@ -17,7 +17,15 @@ export default function HistoryTab({ type }: Props) {
   const getAllTransactionsByType = useGetAllTransactionsByType(type);
 
   return (
-    <View style={styles.centerContainer}>
+    <View
+      style={[
+        styles.centerContainer,
+        getAllTransactionsByType.data &&
+        getAllTransactionsByType.data.length === 0
+          ? { justifyContent: "center" }
+          : { justifyContent: "flex-start" },
+      ]}
+    >
       {getAllTransactionsByType.isLoading ? (
         <SpinnerLoader />
       ) : (
@@ -43,7 +51,6 @@ export default function HistoryTab({ type }: Props) {
 const styles = StyleSheet.create({
   centerContainer: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     padding: 16,
     height: "100%",
