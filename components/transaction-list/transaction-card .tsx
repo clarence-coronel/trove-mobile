@@ -45,7 +45,7 @@ export default function TransactionCard({
           style={[styles.transactionAccount, { color: theme.text.secondary }]}
         >
           {`${account.provider} / ${account.accountName} ${
-            account.accountName ? `/ ${account.nickname}` : ""
+            account.nickname ? `/ ${account.nickname}` : ""
           }`}
         </Text>
       )}

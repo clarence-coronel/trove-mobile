@@ -17,7 +17,6 @@ import { toast } from "@backpackapp-io/react-native-toast";
 import { FormDateTime } from "../forms/form-datetime";
 import { FormField } from "../forms/form-field";
 import { FormSelect } from "../forms/form-select";
-import { FormSelector } from "../forms/form-selector";
 
 const EXPENSE_CATEGORIES = [
   "Food & Dining",
@@ -111,6 +110,8 @@ export default function TransactionFormTab({
   };
 
   const addTransaction = async () => {
+    toast.dismiss();
+
     if (!newDesc || !newAmount) {
       toast.error("Please fill in all fields");
       return;
@@ -133,7 +134,6 @@ export default function TransactionFormTab({
         const newAccountBalance = selectedAccount.balance - amountNum;
 
         if (newAccountBalance < 0) {
-          toast.dismiss();
           toast.error("Insufficient account balance.");
           return;
         }
@@ -211,16 +211,7 @@ export default function TransactionFormTab({
               onChangeText={setNewDesc}
             />
 
-            <FormField
-              label="Amount"
-              required
-              placeholder="0"
-              value={newAmount}
-              onChangeText={handleBalanceChange}
-              keyboardType="numeric"
-            />
-
-            <FormSelector
+            <FormSelect
               label="Category"
               required
               options={
@@ -236,6 +227,15 @@ export default function TransactionFormTab({
               }
               value={category}
               onChange={setCategory}
+            />
+
+            <FormField
+              label="Amount"
+              required
+              placeholder="0"
+              value={newAmount}
+              onChangeText={handleBalanceChange}
+              keyboardType="numeric"
             />
 
             <FormDateTime
