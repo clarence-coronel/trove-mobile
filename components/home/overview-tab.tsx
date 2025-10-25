@@ -1,43 +1,31 @@
-import useColorTheme from "@/hooks/useColorTheme";
-
 import { useGetAllAccountsBalance } from "@/api/accounts/accounts.queries";
 import { useGetAllTransactions } from "@/api/transactions/transactions.queries";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import SpinnerLoader from "../loaders/spinner-loader";
 import TransactionList from "../transaction-list";
 
 export default function OverviewTab() {
-  const { theme } = useColorTheme();
-
   const getAllAccountsBalance = useGetAllAccountsBalance();
   const getAllTransactions = useGetAllTransactions();
-
-  useEffect(() => {
-    console.log("getAllAccountsBalance", getAllAccountsBalance.data);
-  }, [getAllAccountsBalance.data]);
 
   const [isVisible, setIsVisible] = useState(true);
 
   if (getAllAccountsBalance.isLoading || getAllTransactions.isLoading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={theme.tint} />
-      </View>
-    );
+    return <SpinnerLoader />;
   }
 
-  if (!getAllAccountsBalance.data || !getAllTransactions.data) return null;
-
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        getAllTransactions.data && getAllTransactions.data.length === 0
+          ? { height: "100%" }
+          : null,
+      ]}
+    >
       <LinearGradient
         colors={["#3ca940", "#10871a", "#065b0f"]}
         start={{ x: 0, y: 0 }}
@@ -53,7 +41,7 @@ export default function OverviewTab() {
             <Text style={styles.totalAmount}>₱</Text>
             <Text style={styles.totalAmount}>
               {isVisible
-                ? getAllAccountsBalance.data?.toLocaleString()
+                ? (getAllAccountsBalance.data ?? 0).toLocaleString()
                 : "••••••"}
             </Text>
 
@@ -75,7 +63,7 @@ export default function OverviewTab() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, paddingBottom: 0 },
+  container: { padding: 16, paddingBottom: 0 },
   totalCard: {
     borderRadius: 12,
     padding: 24,

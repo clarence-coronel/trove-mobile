@@ -1,11 +1,10 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import { Transaction, TransactionType } from "@/lib/db";
-import { database } from "@/lib/db/database";
-import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { TransactionType } from "@/lib/db";
+import React from "react";
+import { StyleSheet, View } from "react-native";
 
-import { toast } from "@backpackapp-io/react-native-toast";
+import { useGetAllTransactionsByType } from "@/api/transactions/transactions.queries";
+import SpinnerLoader from "../loaders/spinner-loader";
 import TransactionList from "../transaction-list";
 
 interface Props {
@@ -15,48 +14,25 @@ interface Props {
 export default function HistoryTab({ type }: Props) {
   const { theme } = useColorTheme();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadTransactions = async () => {
-    try {
-      setLoading(true);
-      const data = await database.transactions.getByType(type);
-      setTransactions(data);
-    } catch (error) {
-      console.error(`Failed to load ${type.toLowerCase()}s:`, error);
-
-      toast.error(`Failed to load ${type.toLowerCase()}s`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      loadTransactions();
-    }, [type])
-  );
+  const getAllTransactionsByType = useGetAllTransactionsByType(type);
 
   return (
     <View style={styles.centerContainer}>
-      {loading ? (
-        <View>
-          <Text style={{ color: theme.text.secondary }}>
-            Loading {type.toLowerCase()}s...
-          </Text>
-        </View>
+      {getAllTransactionsByType.isLoading ? (
+        <SpinnerLoader />
       ) : (
         <View
-          style={{
-            width: "100%",
-            height: "100%",
-            justifyContent: "flex-start",
-          }}
+          style={[
+            styles.transactionContainer,
+            getAllTransactionsByType.data &&
+            getAllTransactionsByType.data.length === 0
+              ? { height: "100%" }
+              : null,
+          ]}
         >
           <TransactionList
-            transactions={transactions}
-            onRefresh={loadTransactions}
+            transactions={getAllTransactionsByType.data ?? []}
+            onRefresh={getAllTransactionsByType.refetch}
           />
         </View>
       )}
@@ -71,5 +47,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     height: "100%",
+  },
+  transactionContainer: {
+    width: "100%",
+    justifyContent: "flex-start",
   },
 });

@@ -1,8 +1,8 @@
 import useColorTheme from "@/hooks/useColorTheme";
-import { Account, database, TransactionType } from "@/lib/db";
+import { Account, TransactionType } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
-import * as React from "react";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -13,10 +13,13 @@ import {
 } from "react-native";
 import { Text } from "react-native-paper";
 
+import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
+import { useCreateTransaction } from "@/api/transactions/transactions.mutations";
 import { toast } from "@backpackapp-io/react-native-toast";
 import { FormDateTime } from "../forms/form-datetime";
 import { FormField } from "../forms/form-field";
 import { FormSelect } from "../forms/form-select";
+import SpinnerLoader from "../loaders/spinner-loader";
 
 const EXPENSE_CATEGORIES = [
   "Food & Dining",
@@ -62,6 +65,9 @@ export default function TransactionFormTab({
   onTransactionAdded,
 }: Props) {
   const { theme } = useColorTheme();
+
+  const createTransaction = useCreateTransaction();
+
   const accentColor = type === "EARNING" ? "#10871a" : "#FF4D4D";
 
   const [newDesc, setNewDesc] = useState("");
@@ -72,36 +78,21 @@ export default function TransactionFormTab({
 
   const [date, setDate] = useState(new Date());
 
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const getAllAccounts = useGetAllAccounts();
 
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
-  React.useEffect(() => {
-    if (!selectedAccountId) return;
+  useEffect(() => {
+    if (!selectedAccountId || getAllAccounts.isLoading) return;
 
-    const selected = accounts.find((acc) => acc.id === selectedAccountId);
+    const selected = getAllAccounts.data?.find(
+      (acc) => acc.id === selectedAccountId
+    );
 
     if (!selected) return;
 
     setSelectedAccount(selected);
-  }, [selectedAccountId, accounts]);
-
-  React.useEffect(() => {
-    const loadDefaultAccount = async () => {
-      try {
-        const accounts = await database.accounts.getAll();
-
-        setAccounts(accounts);
-
-        if (accounts.length > 0) {
-          setSelectedAccountId(accounts[0].id);
-        }
-      } catch (error) {
-        console.error("Failed to load accounts:", error);
-      }
-    };
-    loadDefaultAccount();
-  }, []);
+  }, [selectedAccountId, getAllAccounts.data]);
 
   const handleBalanceChange = (text: string) => {
     // Format with commas
@@ -113,7 +104,7 @@ export default function TransactionFormTab({
     toast.dismiss();
 
     if (!newDesc || !newAmount) {
-      toast.error("Please fill in all fields");
+      toast.error("Please fill in all fields.");
       return;
     }
 
@@ -129,47 +120,31 @@ export default function TransactionFormTab({
       return;
     }
 
-    try {
-      if (type === "EXPENSE") {
-        const newAccountBalance = selectedAccount.balance - amountNum;
+    if (type === "EXPENSE") {
+      const newAccountBalance = selectedAccount.balance - amountNum;
 
-        if (newAccountBalance < 0) {
-          toast.error("Insufficient account balance.");
-          return;
-        }
+      if (newAccountBalance < 0) {
+        toast.error("Insufficient account balance.");
+        return;
       }
-      await database.transactions.add({
-        name: newDesc,
-        type,
-        amount: amountNum,
-        accountId: selectedAccountId,
-        datetime: date.toISOString(),
-        category,
-      });
-
-      const account = await database.accounts.getById(selectedAccountId);
-      if (account) {
-        const newBalance =
-          type === "EARNING"
-            ? account.balance + amountNum
-            : account.balance - amountNum;
-        await database.accounts.updateBalance(selectedAccountId, newBalance);
-      }
-
-      setNewDesc("");
-      setNewAmount("");
-      setDate(new Date());
-      onTransactionAdded?.();
-
-      toast.success(
-        `${type === "EARNING" ? "Earning" : "Expense"} added successfully!`
-      );
-    } catch (error) {
-      console.error(`Failed to add ${type.toLowerCase()}:`, error);
-
-      toast.error(`Failed to add ${type.toLowerCase()}`);
     }
+
+    await createTransaction.mutateAsync({
+      name: newDesc,
+      type,
+      amount: amountNum,
+      accountId: selectedAccountId,
+      datetime: date.toISOString(),
+      category,
+    });
+
+    setNewDesc("");
+    setNewAmount("");
+    setDate(new Date());
+    onTransactionAdded?.();
   };
+
+  if (getAllAccounts.isLoading) return <SpinnerLoader />;
 
   return (
     <KeyboardAvoidingView
@@ -191,12 +166,14 @@ export default function TransactionFormTab({
             <FormSelect
               label="Account"
               required
-              options={accounts.map((account) => ({
-                label: `${account.provider} / ${account.accountName} ${
-                  account.nickname ? `/ ${account.nickname}` : ""
-                }`,
-                value: account.id,
-              }))}
+              options={
+                getAllAccounts.data?.map((account) => ({
+                  label: `${account.provider} / ${account.accountName} ${
+                    account.nickname ? `/ ${account.nickname}` : ""
+                  }`,
+                  value: account.id,
+                })) ?? []
+              }
               value={selectedAccountId}
               onChange={setSelectedAccountId}
             />

@@ -13,11 +13,11 @@ export const useCreateAccount = () => {
     meta: {
       onError: (error: Error) => {
         console.error(error);
-        toast.error("Failed to create account");
+        toast.error("Failed to add account.");
       },
     },
     onSuccess: () => {
-      toast.success("Account created successfully!");
+      toast.success("Account added successfully!");
 
       queryClient.invalidateQueries({ queryKey: accountsKeys.lists() });
 
@@ -42,10 +42,10 @@ export const useUpdateAccount = () => {
       await database.accounts.update(id, account),
     onError: (error) => {
       console.error(error);
-      toast.error("Failed to update account");
+      toast.error("Failed to save account.");
     },
     onSuccess: () => {
-      toast.success("Account updated successfully!");
+      toast.success("Account saved successfully!");
 
       queryClient.invalidateQueries({ queryKey: accountsKeys.lists() });
 
@@ -63,7 +63,7 @@ export const useDeleteAccount = () => {
     mutationFn: async (id) => await database.accounts.delete(id),
     onError: (error) => {
       console.error(error);
-      toast.error("Failed to delete account");
+      toast.error("Failed to delete account.");
     },
     onSuccess: () => {
       toast.success("Account deleted successfully!");

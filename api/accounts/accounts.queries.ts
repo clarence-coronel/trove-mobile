@@ -9,7 +9,7 @@ export const useGetAllAccounts = () => {
     queryFn: async () => await database.accounts.getAll(),
     meta: {
       onError: (error: Error) => {
-        toast.error("Failed to load accounts");
+        toast.error("Failed to load accounts.");
 
         console.error(error);
       },
@@ -23,7 +23,7 @@ export const useGetAllAccountsBalance = () => {
     queryFn: async () => await database.accounts.getTotalBalance(),
     meta: {
       onError: (error: Error) => {
-        toast.error("Failed to load all accounts balance");
+        toast.error("Failed to load all accounts balance.");
 
         console.error(error);
       },
