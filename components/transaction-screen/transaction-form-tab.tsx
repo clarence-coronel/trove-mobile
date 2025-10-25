@@ -1,6 +1,6 @@
 import useColorTheme from "@/hooks/useColorTheme";
 import { Account, database, TransactionType } from "@/lib/db";
-import { formatNumberWithCommas } from "@/utils/balance";
+import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
 import * as React from "react";
 import { useState } from "react";
 import {
@@ -75,6 +75,18 @@ export default function TransactionFormTab({
 
   const [accounts, setAccounts] = useState<Account[]>([]);
 
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+
+  React.useEffect(() => {
+    if (!selectedAccountId) return;
+
+    const selected = accounts.find((acc) => acc.id === selectedAccountId);
+
+    if (!selected) return;
+
+    setSelectedAccount(selected);
+  }, [selectedAccountId, accounts]);
+
   React.useEffect(() => {
     const loadDefaultAccount = async () => {
       try {
@@ -104,19 +116,28 @@ export default function TransactionFormTab({
       return;
     }
 
-    if (!selectedAccountId) {
+    if (!selectedAccountId || !selectedAccount) {
       toast.error("No account selected. Please create an account first.");
       return;
     }
 
-    const amountNum = parseFloat(newAmount);
+    const amountNum = parseFormattedNumber(newAmount);
+
     if (isNaN(amountNum) || amountNum <= 0) {
       toast.error("Please enter a valid amount.");
-
       return;
     }
 
     try {
+      if (type === "EXPENSE") {
+        const newAccountBalance = selectedAccount.balance - amountNum;
+
+        if (newAccountBalance < 0) {
+          toast.dismiss();
+          toast.error("Insufficient account balance.");
+          return;
+        }
+      }
       await database.transactions.add({
         name: newDesc,
         type,
