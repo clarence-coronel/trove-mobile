@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { AccountType, NewAccount } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
-import Toast from "react-native-toast-message";
+import { toast } from "@backpackapp-io/react-native-toast";
 import { FormField } from "../forms/form-field";
 import { FormSelector } from "../forms/form-selector";
 import FormModal from "../modals/form-modal";
@@ -52,12 +52,11 @@ export default function AddAccountModal({
 
     // Check if it exceeds max balance
     if (numericValue > MAX_BALANCE) {
-      Toast.show({
-        type: "error",
-        text1: `Balance cannot exceed ${formatNumberWithCommas(
+      toast.error(
+        `Balance cannot exceed ${formatNumberWithCommas(
           MAX_BALANCE.toString()
-        )}`,
-      });
+        )}`
+      );
       return;
     }
 
@@ -68,10 +67,7 @@ export default function AddAccountModal({
 
   const handleSubmit = () => {
     if (!formData.provider || !formData.accountName || !formData.type) {
-      Toast.show({
-        type: "error",
-        text1: "Please fill in all required fields",
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -79,12 +75,11 @@ export default function AddAccountModal({
       formData.balance === "" ? 0 : parseFormattedNumber(formData.balance);
 
     if (balanceValue > MAX_BALANCE) {
-      Toast.show({
-        type: "error",
-        text1: `Balance cannot exceed ${formatNumberWithCommas(
+      toast.error(
+        `Balance cannot exceed ${formatNumberWithCommas(
           MAX_BALANCE.toString()
-        )}`,
-      });
+        )}`
+      );
       return;
     }
 
@@ -123,9 +118,12 @@ export default function AddAccountModal({
       title="Add Account"
       onSubmit={handleSubmit}
       submitText="Add"
+      disableSubmit={
+        !formData.provider || !formData.accountName || !formData.type
+      }
     >
       <FormField
-        label="Bank Name"
+        label="Provider Name"
         required
         placeholder="e.g., BDO, BPI, GCash"
         value={formData.provider}
@@ -135,6 +133,19 @@ export default function AddAccountModal({
           }
         }}
         maxLength={MAX_PROVIDER_LENGTH}
+      />
+
+      <FormField
+        label="Account Name"
+        required
+        placeholder="Name"
+        value={formData.accountName}
+        onChangeText={(text) => {
+          if (text.length <= MAX_ACCOUNT_NAME_LENGTH) {
+            setFormData({ ...formData, accountName: text });
+          }
+        }}
+        maxLength={MAX_ACCOUNT_NAME_LENGTH}
       />
 
       <FormField
@@ -155,19 +166,6 @@ export default function AddAccountModal({
         keyboardType="decimal-pad"
         value={formData.balance}
         onChangeText={handleBalanceChange}
-      />
-
-      <FormField
-        label="Account Name"
-        required
-        placeholder="Name"
-        value={formData.accountName}
-        onChangeText={(text) => {
-          if (text.length <= MAX_ACCOUNT_NAME_LENGTH) {
-            setFormData({ ...formData, accountName: text });
-          }
-        }}
-        maxLength={MAX_ACCOUNT_NAME_LENGTH}
       />
 
       <FormSelector

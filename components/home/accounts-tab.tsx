@@ -10,7 +10,8 @@ import {
 } from "react-native";
 
 import { Account, database, NewAccount } from "@/lib/db";
-import Toast from "react-native-toast-message";
+
+import { toast } from "@backpackapp-io/react-native-toast";
 import AddAccountModal from "./add-account-modal";
 import Card from "./card";
 import EditAccountModal from "./edit-account-modal";
@@ -45,12 +46,12 @@ export default function AccountsTab() {
     try {
       await database.accounts.add(newAccount);
       await loadAccounts();
+
+      toast.success(`Account added successfully!`);
     } catch (error) {
       console.error("Failed to add account:", error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to add account. Please try again.",
-      });
+
+      toast.error("Failed to add account. Please try again.");
     }
   };
 
@@ -66,20 +67,13 @@ export default function AccountsTab() {
         setEditModalVisible(false);
         setSelectedAccount(null);
 
-        Toast.show({
-          type: "success",
-          text1: "Account updated successfully!",
-        });
+        toast.success("Account updated successfully!");
       } else {
         throw new Error("Failed to update account. Please try again.");
       }
     } catch (error) {
       console.error("Failed to edit account:", error);
-
-      Toast.show({
-        type: "error",
-        text1: "Failed to update account. Please try again.",
-      });
+      toast.error("Failed to update account. Please try again.");
     }
   };
 
@@ -92,20 +86,13 @@ export default function AccountsTab() {
         setEditModalVisible(false);
         setSelectedAccount(null);
 
-        Toast.show({
-          type: "success",
-          text1: "Account deleted successfully!",
-        });
+        toast.success("Account deleted successfully!");
       } else {
         throw new Error("Failed to delete account. Please try again.");
       }
     } catch (error) {
       console.error("Failed to delete account:", error);
-
-      Toast.show({
-        type: "error",
-        text1: "Failed to delete account. Please try again.",
-      });
+      toast.error("Failed to delete account. Please try again.");
     }
   };
 

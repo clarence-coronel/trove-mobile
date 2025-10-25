@@ -44,8 +44,8 @@ export default function TransactionCard({
         <Text
           style={[styles.transactionAccount, { color: theme.text.secondary }]}
         >
-          {`${account.provider} - ${account.accountName} ${
-            account.accountName ? `- ${account.nickname}` : ""
+          {`${account.provider} / ${account.accountName} ${
+            account.accountName ? `/ ${account.nickname}` : ""
           }`}
         </Text>
       )}
@@ -58,6 +58,7 @@ export default function TransactionCard({
 
 const styles = StyleSheet.create({
   transactionItem: {
+    width: "100%",
     padding: 16,
     borderRadius: 12,
     gap: 10,

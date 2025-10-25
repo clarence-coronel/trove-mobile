@@ -4,7 +4,8 @@ import { database } from "@/lib/db/database";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
+
+import { toast } from "@backpackapp-io/react-native-toast";
 import TransactionList from "../transaction-list";
 
 interface Props {
@@ -25,10 +26,7 @@ export default function HistoryTab({ type }: Props) {
     } catch (error) {
       console.error(`Failed to load ${type.toLowerCase()}s:`, error);
 
-      Toast.show({
-        type: "error",
-        text1: `Failed to load ${type.toLowerCase()}s`,
-      });
+      toast.error(`Failed to load ${type.toLowerCase()}s`);
     } finally {
       setLoading(false);
     }
@@ -49,10 +47,18 @@ export default function HistoryTab({ type }: Props) {
           </Text>
         </View>
       ) : (
-        <TransactionList
-          transactions={transactions}
-          onRefresh={loadTransactions}
-        />
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            justifyContent: "flex-start",
+          }}
+        >
+          <TransactionList
+            transactions={transactions}
+            onRefresh={loadTransactions}
+          />
+        </View>
       )}
     </View>
   );

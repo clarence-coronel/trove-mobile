@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 
 import useColorTheme from "@/hooks/useColorTheme";
 import { Account, AccountType, NewAccount } from "@/lib/db";
+import { toast } from "@backpackapp-io/react-native-toast";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Alert, TouchableOpacity } from "react-native";
-import Toast from "react-native-toast-message";
 import { FormField } from "../forms/form-field";
 import { FormSelector } from "../forms/form-selector";
 import FormModal from "../modals/form-modal";
@@ -55,10 +55,7 @@ export default function EditAccountModal({
 
   const handleSubmit = () => {
     if (!formData.provider || !formData.nickname || !formData.accountName) {
-      Toast.show({
-        type: "error",
-        text1: "Please fill in all required fields",
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -111,6 +108,9 @@ export default function EditAccountModal({
       title="Edit Account"
       onSubmit={handleSubmit}
       submitText="Save Changes"
+      disableSubmit={
+        !formData.provider || !formData.accountName || !formData.type
+      }
       headerRight={
         <TouchableOpacity onPress={handleDelete}>
           <MaterialCommunityIcons
@@ -122,19 +122,11 @@ export default function EditAccountModal({
       }
     >
       <FormField
-        label="Bank Name"
+        label="Provider Name"
         required
         placeholder="e.g., BDO, BPI, GCash"
         value={formData.provider}
         onChangeText={(text) => setFormData({ ...formData, provider: text })}
-      />
-
-      <FormField
-        label="Nickname"
-        required
-        placeholder="e.g., Travel Fund, Emergency"
-        value={formData.nickname ?? ""}
-        onChangeText={(text) => setFormData({ ...formData, nickname: text })}
       />
 
       <FormField
@@ -143,6 +135,14 @@ export default function EditAccountModal({
         placeholder="Name"
         value={formData.accountName}
         onChangeText={(text) => setFormData({ ...formData, accountName: text })}
+      />
+
+      <FormField
+        label="Nickname"
+        required
+        placeholder="e.g., Travel Fund, Emergency"
+        value={formData.nickname ?? ""}
+        onChangeText={(text) => setFormData({ ...formData, nickname: text })}
       />
 
       <FormSelector

@@ -1,3 +1,4 @@
+import { Toasts } from "@backpackapp-io/react-native-toast";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme as NavigationDarkTheme,
@@ -10,15 +11,14 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   MD3DarkTheme,
   MD3LightTheme,
   Provider as PaperProvider,
 } from "react-native-paper";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-
 import "react-native-reanimated";
-import Toast from "react-native-toast-message";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { database } from "@/lib/db/database";
@@ -59,12 +59,9 @@ function RootLayoutNav() {
   const isDark = colorScheme === "dark";
 
   const [dbInitialized, setDbInitialized] = useState(false);
-
   const queryClient = new QueryClient();
 
-  // Paper themes
   const paperTheme = isDark ? MD3DarkTheme : MD3LightTheme;
-  // Navigation themes
   const navigationTheme = isDark ? NavigationDarkTheme : NavigationDefaultTheme;
 
   const initializeDatabase = async () => {
@@ -81,35 +78,38 @@ function RootLayoutNav() {
     initializeDatabase();
   }, []);
 
-  if (!dbInitialized) {
-    return null; // or return null
-  }
+  if (!dbInitialized) return null;
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <PaperProvider theme={paperTheme}>
-          <NavigationThemeProvider value={navigationTheme}>
-            <StatusBar style={isDark ? "light" : "dark"} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Toasts />
+        <QueryClientProvider client={queryClient}>
+          <PaperProvider theme={paperTheme}>
+            <NavigationThemeProvider value={navigationTheme}>
+              <StatusBar style={isDark ? "light" : "dark"} />
 
-            <SafeAreaView
-              style={{
-                flex: 1,
-                backgroundColor: isDark ? "#000000" : "#ffffff",
-              }}
-            >
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="modal"
-                  options={{ presentation: "modal" }}
-                />
-              </Stack>
-              <Toast />
-            </SafeAreaView>
-          </NavigationThemeProvider>
-        </PaperProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+              <SafeAreaView
+                style={{
+                  flex: 1,
+                  backgroundColor: isDark ? "#000000" : "#ffffff",
+                }}
+              >
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="modal"
+                    options={{ presentation: "modal" }}
+                  />
+                </Stack>
+              </SafeAreaView>
+            </NavigationThemeProvider>
+          </PaperProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

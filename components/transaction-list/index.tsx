@@ -58,7 +58,12 @@ export default function TransactionList({
 }
 
 const styles = StyleSheet.create({
-  listContent: { paddingBottom: 20, gap: 12, flex: 1 },
+  listContent: {
+    paddingBottom: 20,
+    gap: 12,
+    flex: 1,
+    width: "100%",
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",

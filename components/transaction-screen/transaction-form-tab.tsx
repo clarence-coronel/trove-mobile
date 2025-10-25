@@ -12,7 +12,8 @@ import {
   View,
 } from "react-native";
 import { Text } from "react-native-paper";
-import Toast from "react-native-toast-message";
+
+import { toast } from "@backpackapp-io/react-native-toast";
 import { FormDateTime } from "../forms/form-datetime";
 import { FormField } from "../forms/form-field";
 import { FormSelect } from "../forms/form-select";
@@ -99,27 +100,19 @@ export default function TransactionFormTab({
 
   const addTransaction = async () => {
     if (!newDesc || !newAmount) {
-      Toast.show({
-        type: "error",
-        text1: "Please fill in all fields",
-      });
+      toast.error("Please fill in all fields");
       return;
     }
 
     if (!selectedAccountId) {
-      Toast.show({
-        type: "error",
-        text1: "No account selected. Please create an account first.",
-      });
+      toast.error("No account selected. Please create an account first.");
       return;
     }
 
     const amountNum = parseFloat(newAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      Toast.show({
-        type: "error",
-        text1: "Please enter a valid amount",
-      });
+      toast.error("Please enter a valid amount.");
+
       return;
     }
 
@@ -147,18 +140,13 @@ export default function TransactionFormTab({
       setDate(new Date());
       onTransactionAdded?.();
 
-      Toast.show({
-        type: "success",
-        text1: `${
-          type === "EARNING" ? "Earning" : "Expense"
-        } added successfully!`,
-      });
+      toast.success(
+        `${type === "EARNING" ? "Earning" : "Expense"} added successfully!`
+      );
     } catch (error) {
       console.error(`Failed to add ${type.toLowerCase()}:`, error);
-      Toast.show({
-        type: "error",
-        text1: `Failed to add ${type.toLowerCase()}`,
-      });
+
+      toast.error(`Failed to add ${type.toLowerCase()}`);
     }
   };
 
@@ -183,8 +171,8 @@ export default function TransactionFormTab({
               label="Account"
               required
               options={accounts.map((account) => ({
-                label: `${account.provider} - ${account.accountName} ${
-                  account.nickname ? `- ${account.nickname}` : ""
+                label: `${account.provider} / ${account.accountName} ${
+                  account.nickname ? `/ ${account.nickname}` : ""
                 }`,
                 value: account.id,
               }))}
