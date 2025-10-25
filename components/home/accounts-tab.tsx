@@ -114,7 +114,10 @@ export default function AccountsTab() {
       <FlatList
         data={accounts}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          accounts.length === 0 ? { height: "100%" } : null,
+        ]}
         ListHeaderComponent={
           <TouchableOpacity
             style={[
@@ -177,7 +180,6 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 20,
     gap: 20,
-    flex: 1,
   },
   addButton: {
     paddingVertical: 12,
