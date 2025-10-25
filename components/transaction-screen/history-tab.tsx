@@ -16,47 +16,23 @@ export default function HistoryTab({ type }: Props) {
 
   const getAllTransactionsByType = useGetAllTransactionsByType(type);
 
+  if (getAllTransactionsByType.isLoading) {
+    return <SpinnerLoader />;
+  }
+
   return (
-    <View
-      style={[
-        styles.centerContainer,
-        getAllTransactionsByType.data &&
-        getAllTransactionsByType.data.length === 0
-          ? { justifyContent: "center" }
-          : { justifyContent: "flex-start" },
-      ]}
-    >
-      {getAllTransactionsByType.isLoading ? (
-        <SpinnerLoader />
-      ) : (
-        <View
-          style={[
-            styles.transactionContainer,
-            getAllTransactionsByType.data &&
-            getAllTransactionsByType.data.length === 0
-              ? { height: "100%" }
-              : null,
-          ]}
-        >
-          <TransactionList
-            transactions={getAllTransactionsByType.data ?? []}
-            onRefresh={getAllTransactionsByType.refetch}
-          />
-        </View>
-      )}
+    <View style={styles.container}>
+      <TransactionList
+        transactions={getAllTransactionsByType.data ?? []}
+        onRefresh={getAllTransactionsByType.refetch}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  centerContainer: {
+  container: {
     flex: 1,
-    alignItems: "center",
     padding: 16,
-    height: "100%",
-  },
-  transactionContainer: {
-    width: "100%",
-    justifyContent: "flex-start",
   },
 });

@@ -28,7 +28,10 @@ export default function TransactionList({
     <FlatList
       data={transactions}
       keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[
+        styles.listContent,
+        transactions.length === 0 && styles.emptyListContent,
+      ]}
       renderItem={({ item }) => (
         <TransactionCard
           description={item.name}
@@ -50,7 +53,7 @@ export default function TransactionList({
       }
       ListEmptyComponent={
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText]}>No transactions</Text>
+          <Text style={styles.emptyText}>No transactions</Text>
         </View>
       }
     />
@@ -61,12 +64,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
     gap: 12,
-    flex: 1,
-    width: "100%",
   },
-  emptyContainer: {
+  emptyListContent: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
     alignItems: "center",
   },
   emptyText: {

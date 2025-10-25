@@ -18,14 +18,7 @@ export default function OverviewTab() {
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        getAllTransactions.data && getAllTransactions.data.length === 0
-          ? { height: "100%" }
-          : null,
-      ]}
-    >
+    <View style={styles.container}>
       <LinearGradient
         colors={["#3ca940", "#10871a", "#065b0f"]}
         start={{ x: 0, y: 0 }}
@@ -63,7 +56,11 @@ export default function OverviewTab() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 0 },
+  container: {
+    flex: 1,
+    padding: 16,
+    paddingBottom: 0,
+  },
   totalCard: {
     borderRadius: 12,
     padding: 24,
@@ -77,9 +74,4 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   totalAmount: { fontSize: 32, color: "#fff", fontWeight: "bold" },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
 });
