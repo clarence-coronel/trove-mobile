@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -126,59 +124,53 @@ export default function EditAccountModal({
         </TouchableOpacity>
       }
     >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.formContainer}>
-            <FormField
-              label="Provider Name"
-              required
-              placeholder="e.g., BDO, BPI, GCash"
-              value={formData.provider}
-              onChangeText={(text) =>
-                setFormData({ ...formData, provider: text })
-              }
-            />
+        <View style={styles.formContainer}>
+          <FormField
+            label="Provider Name"
+            required
+            placeholder="e.g., BDO, BPI, GCash"
+            value={formData.provider}
+            onChangeText={(text) =>
+              setFormData({ ...formData, provider: text })
+            }
+          />
 
-            <FormField
-              label="Account Name"
-              required
-              placeholder="Name"
-              value={formData.accountName}
-              onChangeText={(text) =>
-                setFormData({ ...formData, accountName: text })
-              }
-            />
+          <FormField
+            label="Account Name"
+            required
+            placeholder="Name"
+            value={formData.accountName}
+            onChangeText={(text) =>
+              setFormData({ ...formData, accountName: text })
+            }
+          />
 
-            <FormField
-              label="Nickname"
-              required
-              placeholder="e.g., Travel Fund, Emergency"
-              value={formData.nickname ?? ""}
-              onChangeText={(text) =>
-                setFormData({ ...formData, nickname: text })
-              }
-            />
+          <FormField
+            label="Nickname"
+            required
+            placeholder="e.g., Travel Fund, Emergency"
+            value={formData.nickname ?? ""}
+            onChangeText={(text) =>
+              setFormData({ ...formData, nickname: text })
+            }
+          />
 
-            <FormSelector
-              label="Account Type"
-              required
-              options={accountTypes.map((acc) => ({ label: acc, value: acc }))}
-              value={formData.type}
-              onChange={(type) =>
-                setFormData({ ...formData, type: type as AccountType })
-              }
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <FormSelector
+            label="Account Type"
+            required
+            options={accountTypes.map((acc) => ({ label: acc, value: acc }))}
+            value={formData.type}
+            onChange={(type) =>
+              setFormData({ ...formData, type: type as AccountType })
+            }
+          />
+        </View>
+      </ScrollView>
     </FormModal>
   );
 }
