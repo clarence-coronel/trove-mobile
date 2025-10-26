@@ -1,4 +1,11 @@
 import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { AccountType, NewAccount } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
@@ -47,10 +54,8 @@ export default function AddAccountModal({
   });
 
   const handleBalanceChange = (text: string) => {
-    // Remove commas for parsing
     const numericValue = parseFormattedNumber(text);
 
-    // Check if it exceeds max balance
     if (numericValue > MAX_BALANCE) {
       toast.error(
         `Balance cannot exceed ${formatNumberWithCommas(
@@ -60,7 +65,6 @@ export default function AddAccountModal({
       return;
     }
 
-    // Format with commas
     const formatted = formatNumberWithCommas(text);
     setFormData({ ...formData, balance: formatted });
   };
@@ -122,61 +126,85 @@ export default function AddAccountModal({
         !formData.provider || !formData.accountName || !formData.type
       }
     >
-      <FormField
-        label="Provider Name"
-        required
-        placeholder="e.g., BDO, BPI, GCash"
-        value={formData.provider}
-        onChangeText={(text) => {
-          if (text.length <= MAX_PROVIDER_LENGTH) {
-            setFormData({ ...formData, provider: text });
-          }
-        }}
-        maxLength={MAX_PROVIDER_LENGTH}
-      />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.formContainer}>
+            <FormField
+              label="Provider Name"
+              required
+              placeholder="e.g., BDO, BPI, GCash"
+              value={formData.provider}
+              onChangeText={(text) => {
+                if (text.length <= MAX_PROVIDER_LENGTH) {
+                  setFormData({ ...formData, provider: text });
+                }
+              }}
+              maxLength={MAX_PROVIDER_LENGTH}
+            />
 
-      <FormField
-        label="Account Name"
-        required
-        placeholder="Name"
-        value={formData.accountName}
-        onChangeText={(text) => {
-          if (text.length <= MAX_ACCOUNT_NAME_LENGTH) {
-            setFormData({ ...formData, accountName: text });
-          }
-        }}
-        maxLength={MAX_ACCOUNT_NAME_LENGTH}
-      />
+            <FormField
+              label="Account Name"
+              required
+              placeholder="Name"
+              value={formData.accountName}
+              onChangeText={(text) => {
+                if (text.length <= MAX_ACCOUNT_NAME_LENGTH) {
+                  setFormData({ ...formData, accountName: text });
+                }
+              }}
+              maxLength={MAX_ACCOUNT_NAME_LENGTH}
+            />
 
-      <FormField
-        label="Nickname"
-        placeholder="e.g., Travel Fund, Emergency"
-        value={formData.nickname ?? ""}
-        onChangeText={(text) => {
-          if (text.length <= MAX_NICKNAME_LENGTH) {
-            setFormData({ ...formData, nickname: text });
-          }
-        }}
-        maxLength={MAX_NICKNAME_LENGTH}
-      />
+            <FormField
+              label="Nickname"
+              placeholder="e.g., Travel Fund, Emergency"
+              value={formData.nickname ?? ""}
+              onChangeText={(text) => {
+                if (text.length <= MAX_NICKNAME_LENGTH) {
+                  setFormData({ ...formData, nickname: text });
+                }
+              }}
+              maxLength={MAX_NICKNAME_LENGTH}
+            />
 
-      <FormField
-        label="Initial Balance"
-        placeholder="0.00"
-        keyboardType="decimal-pad"
-        value={formData.balance}
-        onChangeText={handleBalanceChange}
-      />
+            <FormField
+              label="Initial Balance"
+              placeholder="0.00"
+              keyboardType="decimal-pad"
+              value={formData.balance}
+              onChangeText={handleBalanceChange}
+            />
 
-      <FormSelector
-        label="Account Type"
-        required
-        options={accountTypes}
-        value={formData.type}
-        onChange={(type) =>
-          setFormData({ ...formData, type: type as AccountType })
-        }
-      />
+            <FormSelector
+              label="Account Type"
+              required
+              options={accountTypes}
+              value={formData.type}
+              onChange={(type) =>
+                setFormData({ ...formData, type: type as AccountType })
+              }
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </FormModal>
   );
 }
+
+const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  formContainer: {
+    gap: 16,
+  },
+});
