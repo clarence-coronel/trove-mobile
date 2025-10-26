@@ -1,10 +1,12 @@
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+
 import { Tabs } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -35,16 +37,24 @@ export default function TabLayout() {
         options={{
           title: "Earnings",
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons size={28} name="cash-plus" color={color} />
+            <Feather size={20} name="plus-circle" color={color} />
           ),
         }}
       />
-
+      <Tabs.Screen
+        name="expenses"
+        options={{
+          title: "Expenses",
+          tabBarIcon: ({ color }) => (
+            <Feather size={20} name="minus-circle" color={color} />
+          ),
+        }}
+      />
       {/* Center floating Home tab */}
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Trove",
           headerShown: false,
           tabBarIcon: ({ color }) => (
             <View style={styles.homeWrapper}>
@@ -59,7 +69,7 @@ export default function TabLayout() {
                 ]}
               >
                 <MaterialCommunityIcons
-                  name="wallet-bifold-outline"
+                  name="treasure-chest-outline"
                   size={30}
                   color={color}
                 />
@@ -70,11 +80,30 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="expenses"
+        name="trend"
         options={{
-          title: "Expenses",
+          title: "Trend",
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons size={28} name="cash-minus" color={color} />
+            <Feather size={20} name="trending-up" color={color} />
+          ),
+          tabBarButton: (props) => (
+            <TouchableOpacity style={[props.style, { opacity: 0.3 }]}>
+              {props.children}
+            </TouchableOpacity>
+          ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color }) => (
+            <Feather size={20} name="settings" color={color} />
           ),
         }}
       />
@@ -91,13 +120,13 @@ const styles = StyleSheet.create({
   },
   centerIconContainer: {
     position: "absolute",
-    top: -10, // floating above tab bar
+    top: 0, // floating above tab bar
     justifyContent: "center",
     alignItems: "center",
-    width: 50,
-    height: 50,
-    borderRadius: 35,
-    borderWidth: 2,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1.5,
     // shadowColor: "#000",
     // shadowOffset: { width: 0, height: 2 },
     // shadowOpacity: 0.2,

@@ -5,7 +5,7 @@ import TransactionCard from "./transaction-card ";
 
 interface Props {
   transactions: Transaction[];
-  onRefresh?: () => void;
+  onRefresh?: () => Promise<void>;
   refreshing?: boolean;
 }
 

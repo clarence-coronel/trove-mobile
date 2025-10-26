@@ -16,6 +16,10 @@ export default function HistoryTab({ type }: Props) {
 
   const getAllTransactionsByType = useGetAllTransactionsByType(type);
 
+  const handleRefresh = async () => {
+    await getAllTransactionsByType.refetch();
+  };
+
   if (getAllTransactionsByType.isLoading) {
     return <SpinnerLoader />;
   }
@@ -24,7 +28,7 @@ export default function HistoryTab({ type }: Props) {
     <View style={styles.container}>
       <TransactionList
         transactions={getAllTransactionsByType.data ?? []}
-        onRefresh={getAllTransactionsByType.refetch}
+        onRefresh={handleRefresh}
       />
     </View>
   );

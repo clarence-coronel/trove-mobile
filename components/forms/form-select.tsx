@@ -14,10 +14,8 @@ type Option = { label: string; value: string };
 interface FormSelectProps {
   label: string;
   options: Option[];
-  value: string;
+  value: string | null;
   onChange: (value: string) => void;
-  getLabel?: (option: string) => string;
-  getValue?: (option: string) => string;
   placeholder?: string;
   required?: boolean;
 }
@@ -27,8 +25,6 @@ export function FormSelect({
   options,
   value,
   onChange,
-  getLabel = (option) => String(option),
-  getValue = (option) => String(option),
   placeholder = "Select an option",
   required = false,
 }: FormSelectProps) {

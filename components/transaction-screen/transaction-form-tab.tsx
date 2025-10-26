@@ -72,7 +72,7 @@ export default function TransactionFormTab({
 
   const [newDesc, setNewDesc] = useState("");
   const [newAmount, setNewAmount] = useState("");
-  const [category, setCategory] = useState("Others");
+  const [category, setCategory] = useState<string | null>(null);
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
@@ -94,6 +94,12 @@ export default function TransactionFormTab({
     setSelectedAccount(selected);
   }, [selectedAccountId, getAllAccounts.data]);
 
+  useEffect(() => {
+    if (getAllAccounts.isLoading) return;
+
+    setSelectedAccountId("");
+  }, [getAllAccounts.data]);
+
   const handleBalanceChange = (text: string) => {
     // Format with commas
     const formatted = formatNumberWithCommas(text);
@@ -103,7 +109,7 @@ export default function TransactionFormTab({
   const addTransaction = async () => {
     toast.dismiss();
 
-    if (!newDesc || !newAmount) {
+    if (!newDesc || !newAmount || !category) {
       toast.error("Please fill in all fields.");
       return;
     }
@@ -138,9 +144,12 @@ export default function TransactionFormTab({
       category,
     });
 
+    setSelectedAccountId("");
     setNewDesc("");
+    setCategory(null);
     setNewAmount("");
     setDate(new Date());
+
     onTransactionAdded?.();
   };
 

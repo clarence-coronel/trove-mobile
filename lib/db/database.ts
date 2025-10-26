@@ -3,6 +3,9 @@ import * as SQLite from "expo-sqlite";
 import { AccountRepository } from "./account-repository";
 import { TransactionRepository } from "./transaction-repository";
 
+// Unique app identifier - change this to something unique for your app
+const APP_SIGNATURE = "trove-v1-10-2025-101701";
+
 class Database {
   private db: SQLite.SQLiteDatabase | null = null;
   public accounts: AccountRepository;
@@ -15,11 +18,12 @@ class Database {
 
   async init(): Promise<void> {
     try {
-      this.db = await SQLite.openDatabaseAsync("myapp.db");
+      this.db = await SQLite.openDatabaseAsync("trove.db");
 
       await this.db.execAsync("PRAGMA foreign_keys = ON;");
 
       await this.createTables();
+      await this.setAppSignature();
       console.log("Database initialized successfully");
     } catch (error) {
       console.error("Database initialization failed:", error);
@@ -29,6 +33,14 @@ class Database {
 
   private async createTables(): Promise<void> {
     if (!this.db) throw new Error("Database not initialized");
+
+    // Create metadata table for app signature
+    await this.db.execAsync(`
+      CREATE TABLE IF NOT EXISTS _metadata (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    `);
 
     await this.db.execAsync(`
       CREATE TABLE IF NOT EXISTS accounts (
@@ -67,15 +79,67 @@ class Database {
     `);
   }
 
-  async resetDatabase(): Promise<void> {
-    if (this.db) {
-      await this.db.closeAsync();
-      this.db = null;
-    }
+  private async setAppSignature(): Promise<void> {
+    if (!this.db) throw new Error("Database not initialized");
 
-    await SQLite.deleteDatabaseAsync("myapp.db");
-    await this.init();
-    console.log("Database reset successfully");
+    // Check if signature already exists
+    const existing = await this.db.getFirstAsync(
+      "SELECT value FROM _metadata WHERE key = 'app_signature'"
+    );
+
+    if (!existing) {
+      // Set the app signature
+      await this.db.runAsync(
+        "INSERT OR REPLACE INTO _metadata (key, value) VALUES (?, ?)",
+        ["app_signature", APP_SIGNATURE]
+      );
+    }
+  }
+
+  async verifyAppSignature(): Promise<boolean> {
+    if (!this.db) throw new Error("Database not initialized");
+
+    try {
+      const result = await this.db.getFirstAsync<{ value: string }>(
+        "SELECT value FROM _metadata WHERE key = 'app_signature'"
+      );
+
+      return result?.value === APP_SIGNATURE;
+    } catch (error) {
+      console.error("Failed to verify app signature:", error);
+      return false;
+    }
+  }
+
+  async resetDatabase(): Promise<void> {
+    try {
+      // Close the database connection first
+      if (this.db) {
+        await this.db.closeAsync();
+        this.db = null;
+        console.log("Database connection closed for reset");
+      }
+
+      // Delete the database file
+      await SQLite.deleteDatabaseAsync("trove.db");
+      console.log("Database file deleted");
+
+      // Reinitialize the database
+      await this.init();
+      console.log("Database reset successfully");
+    } catch (error) {
+      console.error("Database reset failed:", error);
+      // Attempt to reinitialize even if deletion failed
+      try {
+        await this.init();
+      } catch (initError) {
+        console.error(
+          "Failed to reinitialize database after reset error:",
+          initError
+        );
+      }
+      throw error;
+    }
   }
 
   async close(): Promise<void> {
@@ -88,3 +152,4 @@ class Database {
 }
 
 export const database = new Database();
+export { APP_SIGNATURE };
