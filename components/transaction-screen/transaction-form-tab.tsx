@@ -15,6 +15,7 @@ import SpinnerLoader from "../loaders/spinner-loader";
 
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Toast from "react-native-toast-message";
+import { FormSelector } from "../forms/form-selector";
 
 const EXPENSE_CATEGORIES = [
   "Food & Dining",
@@ -97,7 +98,6 @@ export default function TransactionFormTab({
         type: "error",
         text1: "Please fill in all required fields.",
       });
-
       return;
     }
 
@@ -157,7 +157,7 @@ export default function TransactionFormTab({
       showsVerticalScrollIndicator={false}
       enableOnAndroid
       enableAutomaticScroll
-      extraScrollHeight={Platform.OS === "ios" ? 80 : 20} // adjust this if needed
+      extraScrollHeight={Platform.OS === "ios" ? 100 : 40}
     >
       <View
         style={[
@@ -191,7 +191,7 @@ export default function TransactionFormTab({
             onChangeText={setNewDesc}
           />
 
-          <FormSelect
+          <FormSelector
             label="Category"
             required
             options={
@@ -237,12 +237,14 @@ export default function TransactionFormTab({
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: Platform.OS === "ios" ? 40 : 20, // extra bottom padding
     justifyContent: "flex-start",
   },
   addContainer: {
-    padding: 20,
     borderRadius: 12,
+    padding: 20,
     gap: 24,
   },
   addButton: {

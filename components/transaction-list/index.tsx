@@ -94,15 +94,16 @@ export default function TransactionList({
     />
   ) : undefined;
 
+  const isEmpty = transactions.length === 0;
+
   if (isGrouped) {
     return (
       <SectionList
         sections={groupedTransactions()}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[
-          styles.listContent,
-          transactions.length === 0 && styles.emptyListContent,
-        ]}
+        contentContainerStyle={
+          isEmpty ? styles.emptyListContent : styles.listContent
+        }
         renderItem={renderTransactionItem}
         renderSectionHeader={renderSectionHeader}
         stickySectionHeadersEnabled
@@ -120,10 +121,9 @@ export default function TransactionList({
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[
-          styles.listContent,
-          transactions.length === 0 && styles.emptyListContent,
-        ]}
+        contentContainerStyle={
+          isEmpty ? styles.emptyListContent : styles.listContent
+        }
         renderItem={renderTransactionItem}
         refreshControl={refreshControl}
         showsVerticalScrollIndicator={false}
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   emptyListContent: {
-    flex: 1,
+    flexGrow: 1, // take full height
     justifyContent: "center",
     alignItems: "center",
   },

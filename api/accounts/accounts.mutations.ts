@@ -1,6 +1,6 @@
 import { database, NewAccount } from "@/lib/db";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { accountsKeys } from "../queryKeys";
+import { accountsKeys, transactionsKeys } from "../queryKeys";
 import Toast from "react-native-toast-message";
 
 export const useCreateAccount = () => {
@@ -32,6 +32,11 @@ export const useCreateAccount = () => {
       queryClient.invalidateQueries({
         queryKey: accountsKeys.list({ aggregate: "balance" }),
       });
+
+      // Invalidate all transactions
+      queryClient.invalidateQueries({
+        queryKey: transactionsKeys.all,
+      });
     },
   });
 };
@@ -60,10 +65,13 @@ export const useUpdateAccount = () => {
         type: "success",
         text1: "Account saved successfully!",
       });
+
       queryClient.invalidateQueries({ queryKey: accountsKeys.lists() });
 
-      // Also invalidate transactions related to this account
-      // sample => queryClient.invalidateQueries({ queryKey: accountsKeys.lists() });
+      // Invalidate all transactions
+      queryClient.invalidateQueries({
+        queryKey: transactionsKeys.all,
+      });
     },
   });
 };
@@ -95,8 +103,10 @@ export const useDeleteAccount = () => {
         queryKey: accountsKeys.list({ aggregate: "balance" }),
       });
 
-      // Also invalidate transactions related to this account
-      // sample => queryClient.invalidateQueries({ queryKey: accountsKeys.lists() });
+      // Invalidate all transactions
+      queryClient.invalidateQueries({
+        queryKey: transactionsKeys.all,
+      });
     },
   });
 };

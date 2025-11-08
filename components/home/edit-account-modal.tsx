@@ -86,7 +86,7 @@ export default function EditAccountModal({
 
     Alert.alert(
       "Delete Account",
-      `Are you sure you want to delete "${account.nickname}"? This action cannot be undone.`,
+      `Are you sure you want to delete "${account.accountName}"? This action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
         {

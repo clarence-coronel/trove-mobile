@@ -9,7 +9,7 @@ type Option = {
 interface FormSelectorProps {
   label: string;
   options: Option[];
-  value: string;
+  value: string | null;
   onChange: (value: string) => void;
   required?: boolean;
 }
