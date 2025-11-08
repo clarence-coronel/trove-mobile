@@ -4,8 +4,8 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 import { useGetAllTransactionsByType } from "@/api/transactions/transactions.queries";
-import SpinnerLoader from "../loaders/spinner-loader";
-import TransactionList from "../transaction-list";
+import SpinnerLoader from "../../loaders/spinner-loader";
+import TransactionList from "../../transaction-list";
 
 interface Props {
   type: TransactionType;

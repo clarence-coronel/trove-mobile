@@ -1,5 +1,5 @@
-import AccountsTab from "@/components/home/accounts-tab";
-import OverviewTab from "@/components/home/overview-tab";
+import AccountsTab from "@/components/screens/home/accounts-tab";
+import OverviewTab from "@/components/screens/home/overview-tab";
 import { View } from "@/components/Themed";
 import useColorTheme from "@/hooks/useColorTheme";
 import * as React from "react";

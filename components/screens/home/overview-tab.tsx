@@ -4,8 +4,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import SpinnerLoader from "../loaders/spinner-loader";
-import TransactionList from "../transaction-list";
+import SpinnerLoader from "../../loaders/spinner-loader";
+import TransactionList from "../../transaction-list";
 
 export default function OverviewTab() {
   const getAllAccountsBalance = useGetAllAccountsBalance();

@@ -1,4 +1,4 @@
-import TransactionScreen from "@/components/transaction-screen";
+import TransactionScreen from "@/components/screens/transaction-screen";
 import * as React from "react";
 
 export default function ExpensesScreen() {

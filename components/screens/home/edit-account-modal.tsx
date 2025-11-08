@@ -11,9 +11,9 @@ import useColorTheme from "@/hooks/useColorTheme";
 import { Account, AccountType, NewAccount } from "@/lib/db";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
-import { FormField } from "../forms/form-field";
-import { FormSelector } from "../forms/form-selector";
-import FormModal from "../modals/form-modal";
+import { FormField } from "../../forms/form-field";
+import { FormSelector } from "../../forms/form-selector";
+import FormModal from "../../modals/form-modal";
 
 const accountTypes: AccountType[] = ["SAVINGS", "CHECKING", "E-WALLET", "CASH"];
 

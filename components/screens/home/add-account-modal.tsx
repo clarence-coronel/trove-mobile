@@ -5,9 +5,9 @@ import { AccountType, NewAccount } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
 
 import Toast from "react-native-toast-message";
-import { FormField } from "../forms/form-field";
-import { FormSelector } from "../forms/form-selector";
-import FormModal from "../modals/form-modal";
+import { FormField } from "../../forms/form-field";
+import { FormSelector } from "../../forms/form-selector";
+import FormModal from "../../modals/form-modal";
 
 const accountTypes: { label: string; value: AccountType }[] = [
   { label: "SAVINGS", value: "SAVINGS" },
