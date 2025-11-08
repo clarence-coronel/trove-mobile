@@ -18,37 +18,26 @@ import Toast from "react-native-toast-message";
 import { FormSelector } from "../../forms/form-selector";
 
 const EXPENSE_CATEGORIES = [
-  "Food & Dining",
-  "Groceries",
-  "Transportation",
-  "Bills & Utilities",
-  "Healthcare",
-  "Shopping",
-  "Entertainment",
-  "Education",
-  "Personal Care",
-  "Housing",
-  "Insurance",
-  "Subscriptions",
-  "Travel",
-  "Gifts & Donations",
-  "Others",
+  "Food", // dining out, takeout, groceries, snacks
+  "Housing", // rent, mortgage, maintenance, utilities
+  "Health", // medicine, clinic, gym, insurance
+  "Travel", // flights, hotels, trips
+  "Education", // tuition, courses, books
+  "Shopping", // clothes, electronics, accessories
+  "Transportation", // gas, fare, tolls, vehicle expenses
+  "Entertainment", // movies, games, hobbies, streaming
+  "Gifts & Charity", // gifts given, donations
+  "Other", // anything uncategorized
 ];
 
 const EARNING_CATEGORIES = [
-  "Salary",
-  "Freelance",
-  "Business Income",
-  "Investments",
-  "Bonus",
-  "Refund",
-  "Gift",
-  "Side Hustle",
-  "Rental Income",
-  "Commission",
-  "Interest",
-  "Dividends",
-  "Others",
+  "Salary", // main job pay
+  "Freelance", // project-based or gig work
+  "Business", // self-owned ventures or sales profit
+  "Investments", // dividends, capital gains, crypto, stocks
+  "Refunds", // reimbursements, cashback
+  "Gifts", // money received from others
+  "Other", // fallback
 ];
 
 interface Props {
@@ -239,7 +228,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: Platform.OS === "ios" ? 40 : 20, // extra bottom padding
+    paddingBottom: Platform.OS === "ios" ? 40 : 20,
     justifyContent: "flex-start",
   },
   addContainer: {
