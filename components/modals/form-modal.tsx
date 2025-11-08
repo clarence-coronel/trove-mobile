@@ -1,13 +1,16 @@
 import useColorTheme from "@/hooks/useColorTheme";
 import React from "react";
 import {
-  ScrollView,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Modal from "react-native-modal";
+import Toast from "react-native-toast-message";
+import { useToastConfig } from "../toastConfig";
 
 interface FormModalProps {
   visible: boolean;
@@ -33,6 +36,7 @@ export default function FormModal({
   cancelText = "Cancel",
 }: FormModalProps) {
   const { theme } = useColorTheme();
+  const toastConfig = useToastConfig();
 
   return (
     <Modal
@@ -41,18 +45,27 @@ export default function FormModal({
       onBackButtonPress={onClose}
       backdropOpacity={0.5}
       style={{ justifyContent: "flex-end", margin: 0 }}
-      useNativeDriver={false}
+      useNativeDriver={true}
       hideModalContentWhileAnimating
       animationIn="slideInUp"
       animationOut="slideOutDown"
+      avoidKeyboard={true}
     >
+      <Toast config={toastConfig} position="top" topOffset={20} />
       <View
         style={[
           styles.modalContent,
           { backgroundColor: theme.background.primary },
         ]}
       >
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid
+          enableAutomaticScroll
+          extraScrollHeight={Platform.OS === "ios" ? 80 : 20}
+          showsVerticalScrollIndicator={false}
+        >
           {(title || headerRight) && (
             <View style={styles.headerContainer}>
               {title && (
@@ -102,7 +115,7 @@ export default function FormModal({
               </Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
     </Modal>
   );
@@ -114,6 +127,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 24,
     maxHeight: "90%",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
   },
   headerContainer: {
     flexDirection: "row",

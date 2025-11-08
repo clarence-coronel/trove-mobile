@@ -141,7 +141,7 @@ export default function AccountsTab() {
 const styles = StyleSheet.create({
   listContent: {
     padding: 20,
-    gap: 20,
+    gap: 16,
   },
   addButton: {
     paddingVertical: 12,

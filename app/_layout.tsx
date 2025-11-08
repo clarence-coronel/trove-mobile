@@ -1,4 +1,3 @@
-import { Toasts } from "@backpackapp-io/react-native-toast";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme as NavigationDarkTheme,
@@ -20,8 +19,10 @@ import {
 import "react-native-reanimated";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
+import { useToastConfig } from "@/components/toastConfig";
 import { useColorScheme } from "@/components/useColorScheme";
 import { database } from "@/lib/db/database";
+import Toast from "react-native-toast-message";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -64,6 +65,8 @@ function RootLayoutNav() {
   const paperTheme = isDark ? MD3DarkTheme : MD3LightTheme;
   const navigationTheme = isDark ? NavigationDarkTheme : NavigationDefaultTheme;
 
+  const toastConfig = useToastConfig();
+
   const initializeDatabase = async () => {
     try {
       await database.init();
@@ -83,7 +86,6 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <Toasts />
         <QueryClientProvider client={queryClient}>
           <PaperProvider theme={paperTheme}>
             <NavigationThemeProvider value={navigationTheme}>
@@ -110,6 +112,7 @@ function RootLayoutNav() {
           </PaperProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
+      <Toast config={toastConfig} position="top" topOffset={20} />
     </GestureHandlerRootView>
   );
 }

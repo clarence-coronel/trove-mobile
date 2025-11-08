@@ -9,8 +9,8 @@ import {
 
 import useColorTheme from "@/hooks/useColorTheme";
 import { Account, AccountType, NewAccount } from "@/lib/db";
-import { toast } from "@backpackapp-io/react-native-toast";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 import { FormField } from "../forms/form-field";
 import { FormSelector } from "../forms/form-selector";
 import FormModal from "../modals/form-modal";
@@ -61,7 +61,10 @@ export default function EditAccountModal({
 
   const handleSubmit = () => {
     if (!formData.provider || !formData.nickname || !formData.accountName) {
-      toast.error("Please fill in all required fields");
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields",
+      });
       return;
     }
 

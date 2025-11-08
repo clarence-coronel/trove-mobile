@@ -2,6 +2,8 @@ import { database, NewAccount } from "@/lib/db";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { accountsKeys } from "../queryKeys";
 import { toast } from "@backpackapp-io/react-native-toast";
+import { ToastAndroid } from "react-native";
+import Toast from "react-native-toast-message";
 
 export const useCreateAccount = () => {
   const queryClient = useQueryClient();
@@ -45,7 +47,12 @@ export const useUpdateAccount = () => {
       toast.error("Failed to save account.");
     },
     onSuccess: () => {
-      toast.success("Account saved successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Hello",
+        text2: "This is some something 👋",
+      });
+      // toast.success("Account saved successfully!");
 
       queryClient.invalidateQueries({ queryKey: accountsKeys.lists() });
 

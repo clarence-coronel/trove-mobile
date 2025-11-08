@@ -3,14 +3,7 @@ import { Account, TransactionType } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
 
 import { useEffect, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 
 import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
@@ -20,6 +13,8 @@ import { FormDateTime } from "../forms/form-datetime";
 import { FormField } from "../forms/form-field";
 import { FormSelect } from "../forms/form-select";
 import SpinnerLoader from "../loaders/spinner-loader";
+
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const EXPENSE_CATEGORIES = [
   "Food & Dining",
@@ -65,7 +60,6 @@ export default function TransactionFormTab({
   onTransactionAdded,
 }: Props) {
   const { theme } = useColorTheme();
-
   const createTransaction = useCreateTransaction();
 
   const accentColor = type === "EARNING" ? "#10871a" : "#FF4D4D";
@@ -73,37 +67,28 @@ export default function TransactionFormTab({
   const [newDesc, setNewDesc] = useState("");
   const [newAmount, setNewAmount] = useState("");
   const [category, setCategory] = useState<string | null>(null);
-
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
-
   const [date, setDate] = useState(new Date());
 
   const getAllAccounts = useGetAllAccounts();
-
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
   useEffect(() => {
     if (!selectedAccountId || getAllAccounts.isLoading) return;
-
     const selected = getAllAccounts.data?.find(
       (acc) => acc.id === selectedAccountId
     );
-
     if (!selected) return;
-
     setSelectedAccount(selected);
   }, [selectedAccountId, getAllAccounts.data]);
 
   useEffect(() => {
     if (getAllAccounts.isLoading) return;
-
     setSelectedAccountId("");
   }, [getAllAccounts.data]);
 
   const handleBalanceChange = (text: string) => {
-    // Format with commas
-    const formatted = formatNumberWithCommas(text);
-    setNewAmount(formatted);
+    setNewAmount(formatNumberWithCommas(text));
   };
 
   const addTransaction = async () => {
@@ -128,7 +113,6 @@ export default function TransactionFormTab({
 
     if (type === "EXPENSE") {
       const newAccountBalance = selectedAccount.balance - amountNum;
-
       if (newAccountBalance < 0) {
         toast.error("Insufficient account balance.");
         return;
@@ -149,102 +133,93 @@ export default function TransactionFormTab({
     setCategory(null);
     setNewAmount("");
     setDate(new Date());
-
     onTransactionAdded?.();
   };
 
   if (getAllAccounts.isLoading) return <SpinnerLoader />;
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      enableOnAndroid
+      enableAutomaticScroll
+      extraScrollHeight={Platform.OS === "ios" ? 80 : 20} // adjust this if needed
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <View
+        style={[
+          styles.addContainer,
+          { backgroundColor: theme.background.primary },
+        ]}
       >
-        <View
-          style={[
-            styles.addContainer,
-            { backgroundColor: theme.background.primary },
-          ]}
-        >
-          <View style={{ gap: 10 }}>
-            <FormSelect
-              label="Account"
-              required
-              options={
-                getAllAccounts.data?.map((account) => ({
-                  label: `${account.provider} / ${account.accountName} ${
-                    account.nickname ? `/ ${account.nickname}` : ""
-                  }`,
-                  value: account.id,
-                })) ?? []
-              }
-              value={selectedAccountId}
-              onChange={setSelectedAccountId}
-            />
+        <View style={{ gap: 10 }}>
+          <FormSelect
+            label="Account"
+            required
+            options={
+              getAllAccounts.data?.map((account) => ({
+                label: `${account.provider} / ${account.accountName} ${
+                  account.nickname ? `/ ${account.nickname}` : ""
+                }`,
+                value: account.id,
+              })) ?? []
+            }
+            value={selectedAccountId}
+            onChange={setSelectedAccountId}
+          />
 
-            <FormField
-              label="Description"
-              required
-              placeholder={
-                type === "EARNING" ? "e.g. Monthly Salary" : "e.g. Groceries"
-              }
-              value={newDesc}
-              onChangeText={setNewDesc}
-            />
+          <FormField
+            label="Description"
+            required
+            placeholder={
+              type === "EARNING" ? "e.g. Monthly Salary" : "e.g. Groceries"
+            }
+            value={newDesc}
+            onChangeText={setNewDesc}
+          />
 
-            <FormSelect
-              label="Category"
-              required
-              options={
-                type === "EXPENSE"
-                  ? EXPENSE_CATEGORIES.map((cat) => ({
-                      label: cat,
-                      value: cat,
-                    }))
-                  : EARNING_CATEGORIES.map((cat) => ({
-                      label: cat,
-                      value: cat,
-                    }))
-              }
-              value={category}
-              onChange={setCategory}
-            />
+          <FormSelect
+            label="Category"
+            required
+            options={
+              type === "EXPENSE"
+                ? EXPENSE_CATEGORIES.map((cat) => ({ label: cat, value: cat }))
+                : EARNING_CATEGORIES.map((cat) => ({ label: cat, value: cat }))
+            }
+            value={category}
+            onChange={setCategory}
+          />
 
-            <FormField
-              label="Amount"
-              required
-              placeholder="0"
-              value={newAmount}
-              onChangeText={handleBalanceChange}
-              keyboardType="numeric"
-            />
+          <FormField
+            label="Amount"
+            required
+            placeholder="0"
+            value={newAmount}
+            onChangeText={handleBalanceChange}
+            keyboardType="numeric"
+          />
 
-            <FormDateTime
-              label="Transaction Date"
-              value={date}
-              onChange={setDate}
-              mode="datetime"
-              required
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: accentColor }]}
-            onPress={addTransaction}
-          >
-            <Text style={styles.addButtonText}>
-              {`Add ${type === "EARNING" ? "Earning" : "Expense"}`}
-            </Text>
-          </TouchableOpacity>
+          <FormDateTime
+            label="Transaction Date"
+            value={date}
+            onChange={setDate}
+            mode="datetime"
+            required
+          />
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <TouchableOpacity
+          style={[styles.addButton, { backgroundColor: accentColor }]}
+          onPress={addTransaction}
+        >
+          <Text style={styles.addButtonText}>
+            {`Add ${type === "EARNING" ? "Earning" : "Expense"}`}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -252,27 +227,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
-    paddingBottom: 40,
+    justifyContent: "flex-start", // prevents extra bottom space
   },
   addContainer: {
     padding: 20,
     borderRadius: 12,
     gap: 24,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  dateButton: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
   addButton: {
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
   },
-  addButtonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
 });
