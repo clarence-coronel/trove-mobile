@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   transactionItem: {
     width: "100%",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     gap: 10,
   },
   transactionDesc: { fontSize: 16, fontWeight: "500" },

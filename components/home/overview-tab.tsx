@@ -13,6 +13,10 @@ export default function OverviewTab() {
 
   const [isVisible, setIsVisible] = useState(true);
 
+  const handleRefresh = async () => {
+    await getAllTransactions.refetch();
+  };
+
   if (getAllAccountsBalance.isLoading || getAllTransactions.isLoading) {
     return <SpinnerLoader />;
   }
@@ -49,7 +53,8 @@ export default function OverviewTab() {
 
       <TransactionList
         transactions={getAllTransactions.data ?? []}
-        onRefresh={getAllTransactions.refetch}
+        onRefresh={handleRefresh}
+        isGrouped
       />
     </View>
   );
@@ -60,9 +65,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingBottom: 0,
+    borderRadius: 4,
   },
   totalCard: {
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 24,
     alignItems: "center",
     marginBottom: 16,

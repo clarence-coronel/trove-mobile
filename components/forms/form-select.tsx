@@ -1,4 +1,5 @@
 import useColorTheme from "@/hooks/useColorTheme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Modal,
@@ -69,7 +70,12 @@ export function FormSelect({
             ? options.find((opt) => opt.value === value)?.label ?? value
             : placeholder}
         </Text>
-        <Text style={[styles.arrow, { color: theme.text.secondary }]}>▼</Text>
+
+        <MaterialCommunityIcons
+          name="menu-down"
+          size={18}
+          color={theme.text.secondary}
+        />
       </TouchableOpacity>
 
       <Modal

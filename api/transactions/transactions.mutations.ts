@@ -1,7 +1,7 @@
 import { database, NewTransaction } from "@/lib/db";
-import { toast } from "@backpackapp-io/react-native-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { accountsKeys, transactionsKeys } from "../queryKeys";
+import Toast from "react-native-toast-message";
 
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
@@ -11,17 +11,22 @@ export const useCreateTransaction = () => {
     mutationFn: async (newTransaction: NewTransaction) =>
       await database.transactions.add(newTransaction),
     onError: (error, variables) => {
+      Toast.show({
+        type: "error",
+        text1: `Failed to add ${
+          variables.type === "EARNING" ? "earning" : "expense"
+        },`,
+      });
+
       console.error(error);
-      toast.error(
-        `Failed to add ${variables.type === "EARNING" ? "earning" : "expense"},`
-      );
     },
     onSuccess: (_response, variables) => {
-      toast.success(
-        `${
+      Toast.show({
+        type: "success",
+        text1: `${
           variables.type === "EARNING" ? "Earning" : "Expense"
-        } added successfully!`
-      );
+        } added successfully!`,
+      });
 
       // Invalidate all transaction lists
       queryClient.invalidateQueries({ queryKey: transactionsKeys.lists() });

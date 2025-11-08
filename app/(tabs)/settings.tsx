@@ -1,6 +1,6 @@
 import useColorTheme from "@/hooks/useColorTheme";
 import { APP_SIGNATURE, database } from "@/lib/db";
-import { toast } from "@backpackapp-io/react-native-toast";
+
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function Settings() {
   const { theme } = useColorTheme();
@@ -45,9 +46,11 @@ export default function Settings() {
       }
 
       if (!exists) {
-        toast.error(
-          "Database file not found. Make sure you have created some data first."
-        );
+        Toast.show({
+          type: "error",
+          text1:
+            "Database file not found. Make sure you have created some data first.",
+        });
         return;
       }
 
@@ -72,14 +75,23 @@ export default function Settings() {
           UTI: "public.database",
         });
 
-        toast.success("Backup created successfully!");
+        Toast.show({
+          type: "success",
+          text1: "Backup created successfully!",
+        });
       } else {
-        toast.success(`Backup saved to: ${backupFile.uri}`);
+        Toast.show({
+          type: "success",
+          text1: `Backup saved to: ${backupFile.uri}`,
+        });
       }
     } catch (error) {
-      console.error("Backup failed:", error);
+      Toast.show({
+        type: "error",
+        text1: `Failed to create backup: ${error}`,
+      });
 
-      toast.error(`Failed to create backup: ${error}`);
+      console.error("Backup failed:", error);
     } finally {
       setIsBackingUp(false);
     }
@@ -126,7 +138,10 @@ export default function Settings() {
 
       const fileName = result.assets[0].name;
       if (!fileName.endsWith(".db")) {
-        toast.error("Please select a valid database file (.db)");
+        Toast.show({
+          type: "error",
+          text1: "Please select a valid database file (.db)",
+        });
         return;
       }
 
@@ -147,9 +162,11 @@ export default function Settings() {
                 );
 
                 if (!isValid) {
-                  toast.error(
-                    "This backup file was not created by this app or is corrupted. For security reasons, only backups created by this app can be restored."
-                  );
+                  Toast.show({
+                    type: "error",
+                    text1:
+                      "This backup file was not created by this app or is corrupted. For security reasons, only backups created by this app can be restored.",
+                  });
                   setIsRestoring(false);
                   return;
                 }
@@ -199,11 +216,18 @@ export default function Settings() {
                 // Invalidate all queries to refresh the UI
                 await queryClient.invalidateQueries();
 
-                toast.success("Database restored successfully!");
+                Toast.show({
+                  type: "success",
+                  text1: "Database restored successfully!",
+                });
               } catch (error) {
+                Toast.show({
+                  type: "error",
+                  text1: `Failed to restore database: ${error}`,
+                });
+
                 console.error("Restore failed:", error);
 
-                toast.error(`Failed to restore database: ${error}`);
                 // Try to reinitialize the database even if restore failed
                 try {
                   await database.init();
@@ -218,9 +242,12 @@ export default function Settings() {
         ]
       );
     } catch (error) {
-      console.error("Document picker failed:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to select backup file",
+      });
 
-      toast.error("Failed to select backup file");
+      console.error("Document picker failed:", error);
     }
   };
 
@@ -239,10 +266,16 @@ export default function Settings() {
               await database.resetDatabase();
               await queryClient.invalidateQueries();
 
-              toast.success("Database has been reset successfully.");
+              Toast.show({
+                type: "success",
+                text1: "Database has been reset successfully.",
+              });
             } catch (error) {
+              Toast.show({
+                type: "error",
+                text1: "Failed to reset database. Please try again.",
+              });
               console.error("Failed to reset database:", error);
-              toast.success("Failed to reset database. Please try again.");
             } finally {
               setIsResetting(false);
             }

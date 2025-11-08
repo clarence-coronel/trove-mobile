@@ -8,13 +8,13 @@ import { Text } from "react-native-paper";
 
 import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
 import { useCreateTransaction } from "@/api/transactions/transactions.mutations";
-import { toast } from "@backpackapp-io/react-native-toast";
 import { FormDateTime } from "../forms/form-datetime";
 import { FormField } from "../forms/form-field";
 import { FormSelect } from "../forms/form-select";
 import SpinnerLoader from "../loaders/spinner-loader";
 
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Toast from "react-native-toast-message";
 
 const EXPENSE_CATEGORIES = [
   "Food & Dining",
@@ -92,29 +92,40 @@ export default function TransactionFormTab({
   };
 
   const addTransaction = async () => {
-    toast.dismiss();
-
     if (!newDesc || !newAmount || !category) {
-      toast.error("Please fill in all fields.");
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields.",
+      });
+
       return;
     }
 
     if (!selectedAccountId || !selectedAccount) {
-      toast.error("No account selected. Please create an account first.");
+      Toast.show({
+        type: "error",
+        text1: "No account selected. Please create an account first.",
+      });
       return;
     }
 
     const amountNum = parseFormattedNumber(newAmount);
 
     if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error("Please enter a valid amount.");
+      Toast.show({
+        type: "error",
+        text1: "Please enter a valid amount.",
+      });
       return;
     }
 
     if (type === "EXPENSE") {
       const newAccountBalance = selectedAccount.balance - amountNum;
       if (newAccountBalance < 0) {
-        toast.error("Insufficient account balance.");
+        Toast.show({
+          type: "error",
+          text1: "Insufficient account balance.",
+        });
         return;
       }
     }

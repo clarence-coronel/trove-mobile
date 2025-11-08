@@ -15,8 +15,10 @@ interface Props {
   transactions: Transaction[];
   onRefresh?: () => Promise<void>;
   refreshing?: boolean;
-  isGrouped?: boolean; // new prop
+  isGrouped?: boolean;
 }
+
+const ITEM_SPACING = 12; // consistent spacing between headers and cards
 
 export default function TransactionList({
   transactions,
@@ -58,6 +60,40 @@ export default function TransactionList({
       }));
   };
 
+  const renderTransactionItem = ({ item }: { item: Transaction }) => (
+    <View style={{ marginBottom: ITEM_SPACING }}>
+      <TransactionCard
+        description={item.name}
+        amount={item.amount}
+        date={item.datetime}
+        type={item.type}
+        account={item.account}
+        showDate={!isGrouped}
+      />
+    </View>
+  );
+
+  const renderSectionHeader = ({ section: { title } }: any) => (
+    <View style={{ marginBottom: ITEM_SPACING }}>
+      <View
+        style={[styles.headerContainer, { backgroundColor: theme.divider }]}
+      >
+        <Text style={[styles.headerText, { color: theme.text.primary }]}>
+          {title}
+        </Text>
+      </View>
+    </View>
+  );
+
+  const refreshControl = onRefresh ? (
+    <RefreshControl
+      refreshing={isRefreshing || refreshing}
+      onRefresh={handleRefresh}
+      colors={["#10871a"]}
+      tintColor="#10871a"
+    />
+  ) : undefined;
+
   if (isGrouped) {
     return (
       <SectionList
@@ -67,38 +103,11 @@ export default function TransactionList({
           styles.listContent,
           transactions.length === 0 && styles.emptyListContent,
         ]}
-        renderItem={({ item }) => (
-          <TransactionCard
-            description={item.name}
-            amount={item.amount}
-            date={item.datetime}
-            type={item.type}
-            account={item.account}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
-        renderSectionHeader={({ section: { title } }) => (
-          <View style={{ paddingBottom: 6 }}>
-            <View
-              style={[styles.headerContainer, { backgroundColor: theme.tint }]}
-            >
-              <Text style={[styles.headerText, { color: theme.text.primary }]}>
-                {title}
-              </Text>
-            </View>
-          </View>
-        )}
+        renderItem={renderTransactionItem}
+        renderSectionHeader={renderSectionHeader}
         stickySectionHeadersEnabled
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={isRefreshing || refreshing}
-              onRefresh={handleRefresh}
-              colors={["#10871a"]}
-              tintColor="#10871a"
-            />
-          ) : undefined
-        }
+        refreshControl={refreshControl}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No transactions</Text>
@@ -115,27 +124,9 @@ export default function TransactionList({
           styles.listContent,
           transactions.length === 0 && styles.emptyListContent,
         ]}
+        renderItem={renderTransactionItem}
+        refreshControl={refreshControl}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <TransactionCard
-            description={item.name}
-            amount={item.amount}
-            date={item.datetime}
-            type={item.type}
-            account={item.account}
-            showDate={!isGrouped}
-          />
-        )}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={isRefreshing || refreshing}
-              onRefresh={handleRefresh}
-              colors={["#10871a"]}
-              tintColor="#10871a"
-            />
-          ) : undefined
-        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No transactions</Text>
@@ -149,7 +140,6 @@ export default function TransactionList({
 const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
-    gap: 12,
   },
   emptyListContent: {
     flex: 1,
@@ -164,7 +154,6 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   headerContainer: {
-    backgroundColor: "#f0f0f0",
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,

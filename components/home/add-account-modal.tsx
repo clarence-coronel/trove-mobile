@@ -3,7 +3,8 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 import { AccountType, NewAccount } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
-import { toast } from "@backpackapp-io/react-native-toast";
+
+import Toast from "react-native-toast-message";
 import { FormField } from "../forms/form-field";
 import { FormSelector } from "../forms/form-selector";
 import FormModal from "../modals/form-modal";
@@ -51,11 +52,13 @@ export default function AddAccountModal({
     const numericValue = parseFormattedNumber(text);
 
     if (numericValue > MAX_BALANCE) {
-      toast.error(
-        `Balance cannot exceed ${formatNumberWithCommas(
+      Toast.show({
+        type: "error",
+        text1: `Balance cannot exceed ${formatNumberWithCommas(
           MAX_BALANCE.toString()
-        )}`
-      );
+        )}`,
+      });
+
       return;
     }
 
@@ -65,7 +68,10 @@ export default function AddAccountModal({
 
   const handleSubmit = () => {
     if (!formData.provider || !formData.accountName || !formData.type) {
-      toast.error("Please fill in all required fields");
+      Toast.show({
+        type: "error",
+        text1: "Please fill in all required fields.",
+      });
       return;
     }
 
@@ -73,11 +79,12 @@ export default function AddAccountModal({
       formData.balance === "" ? 0 : parseFormattedNumber(formData.balance);
 
     if (balanceValue > MAX_BALANCE) {
-      toast.error(
-        `Balance cannot exceed ${formatNumberWithCommas(
+      Toast.show({
+        type: "error",
+        text1: `Balance cannot exceed ${formatNumberWithCommas(
           MAX_BALANCE.toString()
-        )}`
-      );
+        )}`,
+      });
       return;
     }
 

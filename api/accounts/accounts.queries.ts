@@ -1,7 +1,7 @@
 import { Account, database } from "@/lib/db";
 import { useQuery } from "@tanstack/react-query";
 import { accountsKeys } from "../queryKeys";
-import { toast } from "@backpackapp-io/react-native-toast";
+import Toast from "react-native-toast-message";
 
 export const useGetAllAccounts = () => {
   return useQuery<Account[], Error>({
@@ -9,7 +9,10 @@ export const useGetAllAccounts = () => {
     queryFn: async () => await database.accounts.getAll(),
     meta: {
       onError: (error: Error) => {
-        toast.error("Failed to load accounts.");
+        Toast.show({
+          type: "error",
+          text1: "Failed to load accounts.",
+        });
 
         console.error(error);
       },
@@ -23,7 +26,10 @@ export const useGetAllAccountsBalance = () => {
     queryFn: async () => await database.accounts.getTotalBalance(),
     meta: {
       onError: (error: Error) => {
-        toast.error("Failed to load all accounts balance.");
+        Toast.show({
+          type: "error",
+          text1: "Failed to load all accounts balance.",
+        });
 
         console.error(error);
       },

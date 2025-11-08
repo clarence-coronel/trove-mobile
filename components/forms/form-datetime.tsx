@@ -1,4 +1,5 @@
 import useColorTheme from "@/hooks/useColorTheme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
@@ -99,7 +100,12 @@ export function FormDateTime({
         <Text style={[styles.dateText, { color: theme.text.primary }]}>
           {getDisplayText()}
         </Text>
-        <Text style={[styles.icon, { color: theme.text.secondary }]}>🗓</Text>
+
+        <MaterialCommunityIcons
+          name="calendar"
+          size={18}
+          color={theme.text.secondary}
+        />
       </TouchableOpacity>
 
       {showDatePicker && (

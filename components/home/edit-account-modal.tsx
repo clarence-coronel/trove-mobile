@@ -60,7 +60,7 @@ export default function EditAccountModal({
   }, [account]);
 
   const handleSubmit = () => {
-    if (!formData.provider || !formData.nickname || !formData.accountName) {
+    if (!formData.provider || !formData.accountName) {
       Toast.show({
         type: "error",
         text1: "Please fill in all required fields",
@@ -155,7 +155,6 @@ export default function EditAccountModal({
 
           <FormField
             label="Nickname"
-            required
             placeholder="e.g., Travel Fund, Emergency"
             value={formData.nickname ?? ""}
             onChangeText={(text) =>

@@ -1,7 +1,8 @@
 import { database, Transaction, TransactionType } from "@/lib/db";
 import { useQuery } from "@tanstack/react-query";
 import { transactionsKeys } from "../queryKeys";
-import { toast } from "@backpackapp-io/react-native-toast";
+
+import Toast from "react-native-toast-message";
 
 export const useGetAllTransactions = () => {
   return useQuery<Transaction[], Error>({
@@ -9,8 +10,12 @@ export const useGetAllTransactions = () => {
     queryFn: async () => await database.transactions.getAll(),
     meta: {
       onError: (error: Error) => {
+        Toast.show({
+          type: "success",
+          text1: "Failed to load transactions.",
+        });
+
         console.error(error);
-        toast.error("Failed to load transactions.");
       },
     },
   });
@@ -22,12 +27,14 @@ export const useGetAllTransactionsByType = (type: TransactionType) => {
     queryFn: async () => await database.transactions.getByType(type),
     meta: {
       onError: (error: Error) => {
-        console.error(error);
-        toast.error(
-          `Failed to load ${
+        Toast.show({
+          type: "error",
+          text1: `Failed to load ${
             type === "EARNING" ? "earning" : "expense"
-          } transactions.`
-        );
+          } transactions.`,
+        });
+
+        console.error(error);
       },
     },
   });
