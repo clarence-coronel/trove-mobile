@@ -11,6 +11,7 @@ type Props = {
   date: string;
   type: TransactionType;
   account: Account | null;
+  showDate?: boolean;
 };
 
 export default function TransactionCard({
@@ -19,6 +20,7 @@ export default function TransactionCard({
   date,
   type,
   account,
+  showDate = false,
 }: Props) {
   const { theme } = useColorTheme();
 
@@ -29,9 +31,23 @@ export default function TransactionCard({
         { backgroundColor: theme.background.primary },
       ]}
     >
-      <Text style={[styles.transactionDesc, { color: theme.text.primary }]}>
-        {description}
-      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text style={[styles.transactionDesc, { color: theme.text.primary }]}>
+          {description}
+        </Text>
+        <Text style={[styles.transactionDate, { color: theme.text.secondary }]}>
+          {formatDateTime({
+            isoString: date,
+            include: { time: true, date: showDate },
+          })}
+        </Text>
+      </View>
       <Text
         style={[
           styles.transactionAmount,
@@ -49,9 +65,6 @@ export default function TransactionCard({
           }`}
         </Text>
       )}
-      <Text style={[styles.transactionDate, { color: theme.text.secondary }]}>
-        {formatDateTime(date)}
-      </Text>
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 
@@ -12,7 +12,7 @@ interface CardProps {
   balance?: number;
   cardholder?: string;
   cardType?: AccountType;
-  initialVisibility?: boolean;
+  showSensitiveData?: boolean;
   textColor?: string | null;
   onEdit?: () => void;
 }
@@ -23,11 +23,15 @@ export default function Card({
   balance = 0,
   cardholder = "CLARENCE CORONEL",
   cardType = "SAVINGS",
-  initialVisibility = false,
+  showSensitiveData = false,
   textColor = null,
   onEdit,
 }: CardProps) {
-  const [isVisible, setIsVisible] = useState(initialVisibility);
+  const [isVisible, setIsVisible] = useState(showSensitiveData);
+
+  useEffect(() => {
+    setIsVisible(showSensitiveData);
+  }, [showSensitiveData]);
 
   const effectiveTextColor = textColor ?? "#FFFFFF";
 
@@ -89,7 +93,7 @@ export default function Card({
             </Text>
 
             <TouchableOpacity
-              onPress={toggleVisibility}
+              // onPress={toggleVisibility}
               style={styles.eyeButton}
               activeOpacity={1}
             >
@@ -104,13 +108,6 @@ export default function Card({
                 >
                   {isVisible ? formatBalance(balance) : "••••••"}
                 </Text>
-
-                <MaterialCommunityIcons
-                  name={isVisible ? "eye" : "eye-off"}
-                  size={24}
-                  color={effectiveTextColor}
-                  style={styles.eyeIcon}
-                />
               </View>
             </TouchableOpacity>
           </View>

@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
-    justifyContent: "flex-start", // prevents extra bottom space
+    justifyContent: "flex-start",
   },
   addContainer: {
     padding: 20,

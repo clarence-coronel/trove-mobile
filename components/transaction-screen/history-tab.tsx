@@ -29,6 +29,7 @@ export default function HistoryTab({ type }: Props) {
       <TransactionList
         transactions={getAllTransactionsByType.data ?? []}
         onRefresh={handleRefresh}
+        isGrouped
       />
     </View>
   );
