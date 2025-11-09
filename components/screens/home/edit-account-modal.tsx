@@ -73,7 +73,7 @@ export default function EditAccountModal({
     const updatedAccount: Partial<NewAccount> = {
       provider: formData.provider,
       nickname: formData.nickname,
-      accountName: formData.accountName.toUpperCase(),
+      accountName: formData.accountName,
       type: formData.type,
     };
 
