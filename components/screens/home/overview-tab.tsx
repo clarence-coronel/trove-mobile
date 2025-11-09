@@ -24,7 +24,7 @@ export default function OverviewTab() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={["#3ca940", "#10871a", "#065b0f"]}
+        colors={["#C5A43C", "#8E793E"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.totalCard}

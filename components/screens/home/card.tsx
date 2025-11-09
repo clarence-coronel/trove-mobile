@@ -49,7 +49,7 @@ export default function Card({
   return (
     <View style={styles.cardContainer}>
       <LinearGradient
-        colors={["#3ca940", "#10871a", "#065b0f"]}
+        colors={["#C5A43C", "#8E793E"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}

@@ -1,5 +1,5 @@
-const tintColorLight = "#10871a";
-const tintColorDark = "#10871a";
+const tintColorLight = "#DAAB11"; // Classic digital gold - warm and rich
+const tintColorDark = "#BD8A0B"; // Deep gold - balanced for dark mode
 
 export default {
   light: {
@@ -11,7 +11,7 @@ export default {
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
-    divider: "#ddd",
+    divider: "#cac8c8ff",
     error: "#dc2626",
   },
   dark: {

@@ -69,18 +69,23 @@ export default function TransactionList({
         type={item.type}
         account={item.account}
         showDate={!isGrouped}
+        category={item.category}
       />
     </View>
   );
 
   const renderSectionHeader = ({ section: { title } }: any) => (
-    <View style={{ marginBottom: ITEM_SPACING }}>
+    <View
+      style={{
+        marginBottom: ITEM_SPACING,
+        paddingVertical: 6,
+        backgroundColor: theme.background.secondary,
+      }}
+    >
       <View
         style={[styles.headerContainer, { backgroundColor: theme.divider }]}
       >
-        <Text style={[styles.headerText, { color: theme.text.primary }]}>
-          {title}
-        </Text>
+        <Text style={[styles.headerText, { color: "white" }]}>{title}</Text>
       </View>
     </View>
   );

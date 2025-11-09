@@ -1,43 +1,43 @@
+import { useEffect, useState } from "react";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Text } from "react-native-paper";
+import Toast from "react-native-toast-message";
+
 import useColorTheme from "@/hooks/useColorTheme";
 import { Account, TransactionType } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
 
-import { useEffect, useState } from "react";
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Text } from "react-native-paper";
-
 import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
 import { useCreateTransaction } from "@/api/transactions/transactions.mutations";
+
 import { FormDateTime } from "../../forms/form-datetime";
 import { FormField } from "../../forms/form-field";
 import { FormSelect } from "../../forms/form-select";
+import { FormSelector } from "../../forms/form-selector";
 import SpinnerLoader from "../../loaders/spinner-loader";
 
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Toast from "react-native-toast-message";
-import { FormSelector } from "../../forms/form-selector";
-
 const EXPENSE_CATEGORIES = [
-  "Food", // dining out, takeout, groceries, snacks
-  "Housing", // rent, mortgage, maintenance, utilities
-  "Health", // medicine, clinic, gym, insurance
-  "Travel", // flights, hotels, trips
-  "Education", // tuition, courses, books
-  "Shopping", // clothes, electronics, accessories
-  "Transportation", // gas, fare, tolls, vehicle expenses
-  "Entertainment", // movies, games, hobbies, streaming
-  "Gifts & Charity", // gifts given, donations
-  "Other", // anything uncategorized
+  "Food",
+  "Housing",
+  "Health",
+  "Travel",
+  "Education",
+  "Shopping",
+  "Transportation",
+  "Entertainment",
+  "Gifts & Charity",
+  "Other",
 ];
 
 const EARNING_CATEGORIES = [
-  "Salary", // main job pay
-  "Freelance", // project-based or gig work
-  "Business", // self-owned ventures or sales profit
-  "Investments", // dividends, capital gains, crypto, stocks
-  "Refunds", // reimbursements, cashback
-  "Gifts", // money received from others
-  "Other", // fallback
+  "Salary",
+  "Freelance",
+  "Business",
+  "Investments",
+  "Refunds",
+  "Gifts",
+  "Other",
 ];
 
 interface Props {
@@ -51,6 +51,7 @@ export default function TransactionFormTab({
 }: Props) {
   const { theme } = useColorTheme();
   const createTransaction = useCreateTransaction();
+  const getAllAccounts = useGetAllAccounts();
 
   const accentColor = type === "EARNING" ? "#10871a" : "#FF4D4D";
 
@@ -58,23 +59,19 @@ export default function TransactionFormTab({
   const [newAmount, setNewAmount] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
-  const [date, setDate] = useState(new Date());
-
-  const getAllAccounts = useGetAllAccounts();
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [date, setDate] = useState(new Date());
 
   useEffect(() => {
     if (!selectedAccountId || getAllAccounts.isLoading) return;
     const selected = getAllAccounts.data?.find(
       (acc) => acc.id === selectedAccountId
     );
-    if (!selected) return;
-    setSelectedAccount(selected);
+    setSelectedAccount(selected ?? null);
   }, [selectedAccountId, getAllAccounts.data]);
 
   useEffect(() => {
-    if (getAllAccounts.isLoading) return;
-    setSelectedAccountId("");
+    if (!getAllAccounts.isLoading) setSelectedAccountId("");
   }, [getAllAccounts.data]);
 
   const handleBalanceChange = (text: string) => {
@@ -99,24 +96,14 @@ export default function TransactionFormTab({
     }
 
     const amountNum = parseFormattedNumber(newAmount);
-
     if (isNaN(amountNum) || amountNum <= 0) {
-      Toast.show({
-        type: "error",
-        text1: "Please enter a valid amount.",
-      });
+      Toast.show({ type: "error", text1: "Please enter a valid amount." });
       return;
     }
 
-    if (type === "EXPENSE") {
-      const newAccountBalance = selectedAccount.balance - amountNum;
-      if (newAccountBalance < 0) {
-        Toast.show({
-          type: "error",
-          text1: "Insufficient account balance.",
-        });
-        return;
-      }
+    if (type === "EXPENSE" && selectedAccount.balance - amountNum < 0) {
+      Toast.show({ type: "error", text1: "Insufficient account balance." });
+      return;
     }
 
     await createTransaction.mutateAsync({
@@ -128,11 +115,12 @@ export default function TransactionFormTab({
       category,
     });
 
-    setSelectedAccountId("");
     setNewDesc("");
-    setCategory(null);
     setNewAmount("");
+    setCategory(null);
+    setSelectedAccountId("");
     setDate(new Date());
+
     onTransactionAdded?.();
   };
 
@@ -150,18 +138,25 @@ export default function TransactionFormTab({
     >
       <View
         style={[
-          styles.addContainer,
-          { backgroundColor: theme.background.primary },
+          styles.formContainer,
+          {
+            backgroundColor: theme.background.primary,
+            shadowColor: theme.text.primary,
+          },
         ]}
       >
-        <View style={{ gap: 10 }}>
+        <Text style={[styles.formTitle, { color: theme.text.primary }]}>
+          {type === "EARNING" ? "Add New Earning" : "Add New Expense"}
+        </Text>
+
+        <View style={styles.inputGroup}>
           <FormSelect
             label="Account"
             required
             options={
               getAllAccounts.data?.map((account) => ({
-                label: `${account.provider} / ${account.accountName} ${
-                  account.nickname ? `/ ${account.nickname}` : ""
+                label: `${account.provider} / ${account.accountName}${
+                  account.nickname ? ` / ${account.nickname}` : ""
                 }`,
                 value: account.id,
               })) ?? []
@@ -183,11 +178,13 @@ export default function TransactionFormTab({
           <FormSelector
             label="Category"
             required
-            options={
-              type === "EXPENSE"
-                ? EXPENSE_CATEGORIES.map((cat) => ({ label: cat, value: cat }))
-                : EARNING_CATEGORIES.map((cat) => ({ label: cat, value: cat }))
-            }
+            options={(type === "EXPENSE"
+              ? EXPENSE_CATEGORIES
+              : EARNING_CATEGORIES
+            ).map((cat) => ({
+              label: cat,
+              value: cat,
+            }))}
             value={category}
             onChange={setCategory}
           />
@@ -211,12 +208,11 @@ export default function TransactionFormTab({
         </View>
 
         <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: accentColor }]}
+          style={[styles.submitButton, { backgroundColor: accentColor }]}
           onPress={addTransaction}
+          activeOpacity={0.85}
         >
-          <Text style={styles.addButtonText}>
-            {`Add ${type === "EARNING" ? "Earning" : "Expense"}`}
-          </Text>
+          <Text style={styles.submitButtonText}>Enter</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAwareScrollView>
@@ -226,24 +222,37 @@ export default function TransactionFormTab({
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: Platform.OS === "ios" ? 40 : 20,
-    justifyContent: "flex-start",
-  },
-  addContainer: {
-    borderRadius: 12,
     padding: 20,
+    paddingBottom: Platform.OS === "ios" ? 50 : 30,
+  },
+  formContainer: {
+    borderRadius: 16,
+    padding: 24,
     gap: 24,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  addButton: {
+  formTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  inputGroup: {
+    gap: 14,
+  },
+  submitButton: {
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
   },
-  addButtonText: {
+  submitButtonText: {
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+    letterSpacing: 0.3,
   },
 });
