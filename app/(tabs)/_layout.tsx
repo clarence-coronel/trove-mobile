@@ -6,7 +6,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { Tabs } from "expo-router";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -80,22 +80,12 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="trend"
+        name="transfer"
         options={{
-          title: "Trend",
+          title: "Transfer",
           tabBarIcon: ({ color }) => (
-            <Feather size={20} name="trending-up" color={color} />
+            <Feather size={20} name="send" color={color} />
           ),
-          tabBarButton: (props) => (
-            <TouchableOpacity style={[props.style, { opacity: 0.3 }]}>
-              {props.children}
-            </TouchableOpacity>
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-          },
         }}
       />
       <Tabs.Screen

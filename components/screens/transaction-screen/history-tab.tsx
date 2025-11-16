@@ -1,4 +1,3 @@
-import useColorTheme from "@/hooks/useColorTheme";
 import { TransactionType } from "@/lib/db";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -12,8 +11,6 @@ interface Props {
 }
 
 export default function HistoryTab({ type }: Props) {
-  const { theme } = useColorTheme();
-
   const getAllTransactionsByType = useGetAllTransactionsByType(type);
 
   const handleRefresh = async () => {

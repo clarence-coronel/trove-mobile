@@ -1,5 +1,5 @@
 export type AccountType = "SAVINGS" | "CHECKING" | "E-WALLET" | "CASH";
-export type TransactionType = "EXPENSE" | "EARNING";
+export type TransactionType = "EXPENSE" | "EARNING" | "TRANSFER";
 
 export interface Account {
   id: string;

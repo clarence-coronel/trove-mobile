@@ -155,9 +155,9 @@ export default function TransactionFormTab({
             required
             options={
               getAllAccounts.data?.map((account) => ({
-                label: `${account.provider} / ${account.accountName}${
-                  account.nickname ? ` / ${account.nickname}` : ""
-                }`,
+                label: account.nickname
+                  ? `${account.nickname} (${account.provider})`
+                  : `${account.accountName} (${account.provider})`,
                 value: account.id,
               })) ?? []
             }
