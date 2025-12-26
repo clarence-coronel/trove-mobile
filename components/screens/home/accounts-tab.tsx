@@ -1,6 +1,6 @@
 import useColorTheme from "@/hooks/useColorTheme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,13 +13,17 @@ import {
 import { Account, NewAccount } from "@/lib/db";
 
 import {
-  useCreateAccount,
   useDeleteAccount,
   useUpdateAccount,
 } from "@/api/accounts/accounts.mutations";
 import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
+import {
+  NewAccountInput,
+  useCreateAccount,
+} from "@/hooks/accounts/useCreateAccount";
+import { useGetAccounts } from "@/hooks/accounts/useGetAccounts";
 import AddAccountModal from "./add-account-modal";
-import Card from "./card";
+import Card, { AccountType } from "./card";
 import EditAccountModal from "./edit-account-modal";
 
 export default function AccountsTab() {
@@ -30,13 +34,28 @@ export default function AccountsTab() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
+  // WatermelonDB hook
+  const { accounts, isLoading, error } = useGetAccounts();
+
+  useEffect(() => {
+    console.log(
+      "accounts ",
+      accounts.map((acc) => acc.name)
+    );
+  }, [accounts]);
+
+  const { createAccount, isPending } = useCreateAccount();
+
   const getAllAccounts = useGetAllAccounts();
-  const createAccount = useCreateAccount();
+  // const createAccount = useCreateAccount();
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
 
-  const handleAddAccount = async (newAccount: NewAccount) => {
-    createAccount.mutate(newAccount);
+  const handleAddAccount = async (newAccount: NewAccountInput) => {
+    // createAccount.mutate(newAccount);
+    await createAccount(newAccount);
+
+    console.log("Added account:", newAccount);
   };
 
   const handleEditAccount = async (
@@ -55,7 +74,7 @@ export default function AccountsTab() {
     if (success) setSelectedAccount(null);
   };
 
-  if (getAllAccounts.isLoading) {
+  if (isLoading) {
     return (
       <View
         style={[
@@ -71,7 +90,7 @@ export default function AccountsTab() {
   return (
     <>
       <FlatList
-        data={getAllAccounts.data}
+        data={accounts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,
@@ -125,13 +144,12 @@ export default function AccountsTab() {
         renderItem={({ item }) => (
           <Card
             bankName={item.provider}
-            nickname={item.nickname}
-            balance={item.balance}
-            cardholder={item.accountName}
-            cardType={item.type}
+            balance={item.initialBalance}
+            cardholder={item.name}
+            cardType={item.type as AccountType}
             onEdit={() => {
-              setSelectedAccount(item);
-              setEditModalVisible(true);
+              // setSelectedAccount(item);
+              // setEditModalVisible(true);
             }}
             showSensitiveData={showSensitiveData}
           />

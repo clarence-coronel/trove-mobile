@@ -7,10 +7,10 @@ export default appSchema({
       name: "accounts",
       columns: [
         { name: "name", type: "string" },
+        { name: "provider", type: "string" },
         { name: "type", type: "string" },
         { name: "initial_balance", type: "number" },
         { name: "color", type: "string", isOptional: true },
-        { name: "is_active", type: "boolean" },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

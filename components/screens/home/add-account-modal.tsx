@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
-import { AccountType, NewAccount } from "@/lib/db";
+import { AccountType } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
 
+import { NewAccountInput } from "@/hooks/accounts/useCreateAccount";
 import Toast from "react-native-toast-message";
 import { FormField } from "../../forms/form-field";
 import { FormSelector } from "../../forms/form-selector";
@@ -24,12 +25,11 @@ const MAX_BALANCE = 1000000000000;
 interface AddAccountModalProps {
   visible: boolean;
   onClose: () => void;
-  onAdd: (account: NewAccount) => void;
+  onAdd: (newAccount: NewAccountInput) => void;
 }
 
 interface FormState {
   provider: string;
-  nickname: string | null;
   balance: string;
   accountName: string;
   type: AccountType;
@@ -42,7 +42,6 @@ export default function AddAccountModal({
 }: AddAccountModalProps) {
   const [formData, setFormData] = useState<FormState>({
     provider: "",
-    nickname: null,
     balance: "",
     accountName: "",
     type: "SAVINGS",
@@ -88,11 +87,10 @@ export default function AddAccountModal({
       return;
     }
 
-    const newAccount: NewAccount = {
+    const newAccount: NewAccountInput = {
       provider: formData.provider,
-      nickname: formData.nickname || null,
-      balance: balanceValue,
-      accountName: formData.accountName,
+      initialBalance: balanceValue,
+      name: formData.accountName,
       type: formData.type,
     };
 
@@ -109,7 +107,6 @@ export default function AddAccountModal({
   const resetForm = () => {
     setFormData({
       provider: "",
-      nickname: "",
       balance: "",
       accountName: "",
       type: "SAVINGS",
@@ -157,18 +154,6 @@ export default function AddAccountModal({
               }
             }}
             maxLength={MAX_ACCOUNT_NAME_LENGTH}
-          />
-
-          <FormField
-            label="Nickname"
-            placeholder="e.g., Travel Fund, Emergency"
-            value={formData.nickname ?? ""}
-            onChangeText={(text) => {
-              if (text.length <= MAX_NICKNAME_LENGTH) {
-                setFormData({ ...formData, nickname: text });
-              }
-            }}
-            maxLength={MAX_NICKNAME_LENGTH}
           />
 
           <FormField

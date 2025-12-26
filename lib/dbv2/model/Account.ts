@@ -18,8 +18,9 @@ export default class Account extends Model {
 
   @nochange @field("initial_balance") initialBalance!: number;
   @text("name") name!: string;
+  @text("provider") provider!: string;
   @field("type") type!: string;
-  @field("color") color?: number;
+  @field("color") color?: string;
   @field("is_active") isActive!: boolean;
 
   // Dates
