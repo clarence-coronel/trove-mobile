@@ -9,6 +9,21 @@ import {
 } from "@nozbe/watermelondb/decorators";
 import Transaction from "./Transaction";
 
+export enum AccountType {
+  CASH = "cash",
+
+  SAVINGS = "savings",
+  CHECKING = "checking",
+
+  E_WALLET = "e_wallet",
+
+  // CREDIT_CARD = "credit_card",
+
+  INVESTMENT = "investment",
+
+  // LOAN = "loan",
+}
+
 export default class Account extends Model {
   static table = "accounts";
 
@@ -19,7 +34,7 @@ export default class Account extends Model {
   @nochange @field("initial_balance") initialBalance!: number;
   @text("name") name!: string;
   @text("provider") provider!: string;
-  @field("type") type!: string;
+  @field("type") type!: AccountType;
   @field("color") color?: string;
   @field("is_active") isActive!: boolean;
 

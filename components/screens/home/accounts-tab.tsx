@@ -1,6 +1,6 @@
 import useColorTheme from "@/hooks/useColorTheme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,20 +10,16 @@ import {
   View,
 } from "react-native";
 
-import { Account, NewAccount } from "@/lib/db";
-
-import {
-  useDeleteAccount,
-  useUpdateAccount,
-} from "@/api/accounts/accounts.mutations";
-import { useGetAllAccounts } from "@/api/accounts/accounts.queries";
 import {
   NewAccountInput,
   useCreateAccount,
 } from "@/hooks/accounts/useCreateAccount";
+import { useDeleteAccount } from "@/hooks/accounts/useDeleteAccount";
 import { useGetAccounts } from "@/hooks/accounts/useGetAccounts";
+import { useUpdateAccount } from "@/hooks/accounts/useUpdateAccount";
+import Account from "@/lib/dbv2/model/Account";
 import AddAccountModal from "./add-account-modal";
-import Card, { AccountType } from "./card";
+import Card from "./card";
 import EditAccountModal from "./edit-account-modal";
 
 export default function AccountsTab() {
@@ -34,43 +30,31 @@ export default function AccountsTab() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
-  // WatermelonDB hook
+  // WatermelonDB hooks
   const { accounts, isLoading, error } = useGetAccounts();
+  const { createAccount, isPending: isCreating } = useCreateAccount();
+  const { updateAccount, isPending: isUpdating } = useUpdateAccount();
+  const { deleteAccount, isPending: isDeleting } = useDeleteAccount();
 
-  useEffect(() => {
-    console.log(
-      "accounts ",
-      accounts.map((acc) => acc.name)
-    );
-  }, [accounts]);
-
-  const { createAccount, isPending } = useCreateAccount();
-
-  const getAllAccounts = useGetAllAccounts();
   // const createAccount = useCreateAccount();
-  const updateAccount = useUpdateAccount();
-  const deleteAccount = useDeleteAccount();
+  // const updateAccount = useUpdateAccount();
+  // const deleteAccount = useDeleteAccount();
 
   const handleAddAccount = async (newAccount: NewAccountInput) => {
-    // createAccount.mutate(newAccount);
     await createAccount(newAccount);
-
-    console.log("Added account:", newAccount);
   };
 
   const handleEditAccount = async (
     id: string,
-    updatedAccount: Partial<NewAccount>
+    updatedAccount: Partial<Account>
   ) => {
-    const success = await updateAccount.mutateAsync({
-      id,
-      account: updatedAccount,
-    });
+    const success = await updateAccount(id, updatedAccount);
+
     if (success) setSelectedAccount(null);
   };
 
   const handleDeleteAccount = async (id: string) => {
-    const success = await deleteAccount.mutateAsync(id);
+    const success = await deleteAccount(id);
     if (success) setSelectedAccount(null);
   };
 
@@ -94,9 +78,7 @@ export default function AccountsTab() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,
-          getAllAccounts.data && getAllAccounts.data.length === 0
-            ? { height: "100%" }
-            : null,
+          accounts && accounts.length === 0 ? { height: "100%" } : null,
         ]}
         ListHeaderComponent={
           <View style={styles.headerRow}>
@@ -146,10 +128,10 @@ export default function AccountsTab() {
             bankName={item.provider}
             balance={item.initialBalance}
             cardholder={item.name}
-            cardType={item.type as AccountType}
+            cardType={item.type}
             onEdit={() => {
-              // setSelectedAccount(item);
-              // setEditModalVisible(true);
+              setSelectedAccount(item);
+              setEditModalVisible(true);
             }}
             showSensitiveData={showSensitiveData}
           />

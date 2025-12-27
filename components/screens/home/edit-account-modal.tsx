@@ -8,27 +8,24 @@ import {
 } from "react-native";
 
 import useColorTheme from "@/hooks/useColorTheme";
-import { Account, AccountType, NewAccount } from "@/lib/db";
+import Account, { AccountType } from "@/lib/dbv2/model/Account";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { FormField } from "../../forms/form-field";
 import { FormSelector } from "../../forms/form-selector";
 import FormModal from "../../modals/form-modal";
 
-const accountTypes: AccountType[] = ["SAVINGS", "CHECKING", "E-WALLET", "CASH"];
-
 interface EditAccountModalProps {
   visible: boolean;
   onClose: () => void;
-  onEdit: (id: string, account: Partial<NewAccount>) => void;
+  onEdit: (id: string, account: Partial<Account>) => void;
   onDelete: (id: string) => void;
   account: Account | null;
 }
 
 interface FormState {
   provider: string;
-  nickname: string | null;
-  accountName: string;
+  name: string;
   type: AccountType;
 }
 
@@ -43,24 +40,22 @@ export default function EditAccountModal({
 
   const [formData, setFormData] = useState<FormState>({
     provider: "",
-    nickname: null,
-    accountName: "",
-    type: "SAVINGS",
+    name: "",
+    type: AccountType.SAVINGS,
   });
 
   useEffect(() => {
     if (account) {
       setFormData({
         provider: account.provider,
-        nickname: account.nickname ?? null,
-        accountName: account.accountName,
+        name: account.name,
         type: account.type,
       });
     }
   }, [account]);
 
   const handleSubmit = () => {
-    if (!formData.provider || !formData.accountName) {
+    if (!formData.provider || !formData.name || !formData.type) {
       Toast.show({
         type: "error",
         text1: "Please fill in all required fields",
@@ -70,10 +65,9 @@ export default function EditAccountModal({
 
     if (!account) return;
 
-    const updatedAccount: Partial<NewAccount> = {
+    const updatedAccount: Partial<Account> = {
       provider: formData.provider,
-      nickname: formData.nickname,
-      accountName: formData.accountName,
+      name: formData.name,
       type: formData.type,
     };
 
@@ -86,7 +80,7 @@ export default function EditAccountModal({
 
     Alert.alert(
       "Delete Account",
-      `Are you sure you want to delete "${account.accountName}"? This action cannot be undone.`,
+      `Are you sure you want to delete "${account.name}"? This action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -114,9 +108,7 @@ export default function EditAccountModal({
       title="Edit Account"
       onSubmit={handleSubmit}
       submitText="Save Changes"
-      disableSubmit={
-        !formData.provider || !formData.accountName || !formData.type
-      }
+      disableSubmit={!formData.provider || !formData.name || !formData.type}
       headerRight={
         <TouchableOpacity onPress={handleDelete}>
           <MaterialCommunityIcons
@@ -134,7 +126,7 @@ export default function EditAccountModal({
       >
         <View style={styles.formContainer}>
           <FormField
-            label="Provider Name"
+            label="Provider"
             required
             placeholder="e.g., BDO, BPI, GCash"
             value={formData.provider}
@@ -144,28 +136,20 @@ export default function EditAccountModal({
           />
 
           <FormField
-            label="Account Name"
+            label="Name"
             required
             placeholder="Name"
-            value={formData.accountName}
-            onChangeText={(text) =>
-              setFormData({ ...formData, accountName: text })
-            }
-          />
-
-          <FormField
-            label="Nickname"
-            placeholder="e.g., Travel Fund, Emergency"
-            value={formData.nickname ?? ""}
-            onChangeText={(text) =>
-              setFormData({ ...formData, nickname: text })
-            }
+            value={formData.name}
+            onChangeText={(text) => setFormData({ ...formData, name: text })}
           />
 
           <FormSelector
-            label="Account Type"
+            label="Type"
             required
-            options={accountTypes.map((acc) => ({ label: acc, value: acc }))}
+            options={Object.values(AccountType).map((type) => ({
+              label: type.replace("_", "-").toUpperCase(),
+              value: type,
+            }))}
             value={formData.type}
             onChange={(type) =>
               setFormData({ ...formData, type: type as AccountType })

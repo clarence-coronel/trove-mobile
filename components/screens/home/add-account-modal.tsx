@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
-import { AccountType } from "@/lib/db";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/balance";
 
 import { NewAccountInput } from "@/hooks/accounts/useCreateAccount";
+import { AccountType } from "@/lib/dbv2/model/Account";
 import Toast from "react-native-toast-message";
 import { FormField } from "../../forms/form-field";
 import { FormSelector } from "../../forms/form-selector";
 import FormModal from "../../modals/form-modal";
 
-const accountTypes: { label: string; value: AccountType }[] = [
-  { label: "SAVINGS", value: "SAVINGS" },
-  { label: "CHECKING", value: "CHECKING" },
-  { label: "E-WALLET", value: "E-WALLET" },
-  { label: "CASH", value: "CASH" },
-];
+// const accountTypes: { label: string; value: AccountType }[] = [
+//   { label: "SAVINGS", value: "SAVINGS" },
+//   { label: "CHECKING", value: "CHECKING" },
+//   { label: "E-WALLET", value: "E-WALLET" },
+//   { label: "CASH", value: "CASH" },
+// ];
 
 const MAX_PROVIDER_LENGTH = 50;
 const MAX_NICKNAME_LENGTH = 50;
@@ -44,7 +44,7 @@ export default function AddAccountModal({
     provider: "",
     balance: "",
     accountName: "",
-    type: "SAVINGS",
+    type: AccountType.CASH,
   });
 
   const handleBalanceChange = (text: string) => {
@@ -109,7 +109,7 @@ export default function AddAccountModal({
       provider: "",
       balance: "",
       accountName: "",
-      type: "SAVINGS",
+      type: AccountType.SAVINGS,
     });
   };
 
@@ -131,7 +131,7 @@ export default function AddAccountModal({
       >
         <View style={styles.formContainer}>
           <FormField
-            label="Provider Name"
+            label="Provider"
             required
             placeholder="e.g., BDO, BPI, GCash"
             value={formData.provider}
@@ -144,7 +144,7 @@ export default function AddAccountModal({
           />
 
           <FormField
-            label="Account Name"
+            label="Name"
             required
             placeholder="Name"
             value={formData.accountName}
@@ -165,9 +165,12 @@ export default function AddAccountModal({
           />
 
           <FormSelector
-            label="Account Type"
+            label="Type"
             required
-            options={accountTypes}
+            options={Object.values(AccountType).map((type) => ({
+              label: type.replace("_", "-").toUpperCase(),
+              value: type,
+            }))}
             value={formData.type}
             onChange={(type) =>
               setFormData({ ...formData, type: type as AccountType })

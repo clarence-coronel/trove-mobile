@@ -1,11 +1,12 @@
 import { useCallback, useState } from "react";
 import { watermelonDB } from "@/lib/dbv2";
-import Account from "@/lib/dbv2/model/Account";
+import Account, { AccountType } from "@/lib/dbv2/model/Account";
+import Toast from "react-native-toast-message";
 
 export interface NewAccountInput {
   name: string;
   provider: string;
-  type: string;
+  type: AccountType;
   initialBalance: number;
   color?: string;
 }
@@ -34,8 +35,18 @@ export function useCreateAccount() {
           });
         });
 
-        return newAccount!;
+        Toast.show({
+          type: "success",
+          text1: "Account created successfully",
+        });
+
+        return newAccount;
       } catch (err) {
+        Toast.show({
+          type: "error",
+          text1: "Failed to create account",
+        });
+
         setError(err as Error);
         return null;
       } finally {

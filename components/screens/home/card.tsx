@@ -1,10 +1,9 @@
+import { AccountType } from "@/lib/dbv2/model/Account";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
-
-export type AccountType = "SAVINGS" | "CHECKING" | "E-WALLET" | "CASH";
 
 interface CardProps {
   bankName?: string;
@@ -22,7 +21,7 @@ export default function Card({
   nickname = null,
   balance = 0,
   cardholder = "CLARENCE CORONEL",
-  cardType = "SAVINGS",
+  cardType = AccountType.SAVINGS,
   showSensitiveData = false,
   textColor = null,
   onEdit,
@@ -135,7 +134,7 @@ export default function Card({
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {cardType}
+                {cardType.replace("_", "-")}
               </Text>
             </View>
           </View>
